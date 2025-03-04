@@ -2,7 +2,7 @@ var hwiCalendarDay = function (node) {
   this.$el = $(node);
   this.scope = "calendar";
   this.$form = $(
-    "<div class='calendar'><div class='navi'><i class='cal-prev'>����</i><span class='cal-info'>2018�� 07��</span><i class='cal-next'>����</i></div><div class='head'><em>��</em><em>��</em><em>ȭ</em><em>��</em><em>��</em><em>��</em><em>��</em></div><div class='content'></div></div>"
+    "<div class='calendar'><div class='navi'><i class='cal-prev'> < </i><span class='cal-info'>2018년 07월</span><i class='cal-next'> > </i></div><div class='head'><em>  >>  </em><em>  >>  </em><em>ȭ</em><em>  >>  </em><em>  >>  </em><em>  >>  </em><em>  >>  </em></div><div class='content'></div></div>"
   );
   this.swiperObj;
 
@@ -16,7 +16,7 @@ var hwiCalendarDay = function (node) {
   this.isWeek;
   this.weekOfMonth;
   this.weeksOfMonth;
-  this.firstDayOfpMonth; //��:0 ~ ��:6
+  this.firstDayOfpMonth;
   this.ArrTotDayOfMonth = new Array(
     31,
     28,
@@ -82,7 +82,6 @@ hwiCalendarDay.prototype.initSwiper = function (week) {
               .append(that.returnCalendar());
           }
           _presentIdx = this.SlideNode.pNode;
-          //that.$el.find(".navi .cal-info").html(that.year+"�� "+(that.month+1)+"�� "+(that.weekOfMonth != undefined ? "["+(that.weekOfMonth+1)+"��]" :""));
         }
       }.bind(this),
       0
