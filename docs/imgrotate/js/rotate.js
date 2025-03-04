@@ -11,9 +11,9 @@ var imgPuzzleRotate = function (el, opt) {
   this.cellHeight;
 
   this.option = {
-    horSpace: 10,
-    verSpace: 5,
-    grap: 0,
+    horSpace: 5,
+    verSpace: 4,
+    grap: 2,
   };
 
   $.extend(this.option, opt);
