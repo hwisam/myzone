@@ -11,9 +11,9 @@ var imgPuzzleRotate = function (el, opt) {
   this.cellHeight;
 
   this.option = {
-    horSpace: 4,
-    verSpace: 4,
-    grap: 4,
+    horSpace: 5,
+    verSpace: 5,
+    grap: 5,
   };
 
   $.extend(this.option, opt);
@@ -49,15 +49,15 @@ imgPuzzleRotate.prototype.executeRotate = function () {
       .find("i")
       .each(function (i, v) {
         (function () {
-          var rand = Math.random() * 845;
+          var rand = Math.random() * 800;
 
           return (function () {
-            var duration = 1;
+            var duration = 5;
 
             setTimeout(function () {
               var cellIndex = $(v).index(),
                 deg = 0,
-                increase = 3,
+                increase = 5,
                 interval,
                 intervalFn;
 
@@ -69,10 +69,10 @@ imgPuzzleRotate.prototype.executeRotate = function () {
                   if (deg >= 720) {
                     clearInterval(interval);
                     deg = 0;
-                    duration = duration + 3;
+                    duration = duration + 5;
                     intervalFn();
                   }
-                  if (duration >= 9) {
+                  if (duration == 20) {
                     clearInterval(interval);
                     deg = 0;
                   }
