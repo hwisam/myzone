@@ -57,7 +57,7 @@ imgPuzzleRotate.prototype.executeRotate = function () {
             setTimeout(function () {
               var cellIndex = $(v).index(),
                 deg = 0,
-                increase = 15,
+                increase = 3,
                 interval,
                 intervalFn;
 
