@@ -12,7 +12,7 @@ var imgPuzzleRotate = function (el, opt) {
 
   this.option = {
     horSpace: 4,
-    verSpace: 3,
+    verSpace: 4,
     grap: 4,
   };
 
