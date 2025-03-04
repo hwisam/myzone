@@ -1,0 +1,25 @@
+.hwi-wrap {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+.hwi-wrap:hover {
+  cursor: url("https://maps.gstatic.com/mapfiles/openhand_8_8.cur") 8 8, default;
+}
+.hwi-wrap.cursor-hand-active {
+  cursor: url("https://maps.gstatic.com/mapfiles/closedhand_8_8.cur") 8 8,
+    default;
+}
+.hwi-slide {
+  display: none;
+  overflow: hidden;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  /*
+	transition-timing-function: linear;
+	*/
+}
+.hwi-slide.active {
+  display: block;
+}

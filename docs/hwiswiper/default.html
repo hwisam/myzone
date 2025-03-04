@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="Generator" content="EditPlus®" />
+    <meta name="Author" content="" />
+    <meta name="Keywords" content="" />
+    <meta name="Description" content="" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>HWI-SWIPER</title>
+    <link rel="stylesheet" href="./css/hwiswiper.css" />
+    <style>
+      body {
+        height: 1000px;
+      }
+      .hwi-wrap {
+        width: 100%;
+        height: 300px;
+        border: 1px solid gray;
+      }
+      .hwi-slide img {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <script src="./js/hwiswiper.js"></script>
+  </head>
+  <body>
+    <p>mobile Touch Demo</p>
+    <div id="example">
+      <div class="hwi-wrap">
+        <div class="hwi-slide">
+          <img
+            src="https://img.freepik.com/free-photo/beautiful-wooden-pathway-going-breathtaking-colorful-trees-forest_181624-5840.jpg?t=st=1741096506~exp=1741100106~hmac=f0efdd324b2e9762834c4b303091869ed174fcbc58882f6fec1810cc1b7657d4&w=1060"
+            alt=""
+          />
+        </div>
+        <div class="hwi-slide">
+          <img
+            src="https://img.freepik.com/free-photo/beautiful-shot-different-dog-breeds-resting_181624-19887.jpg?t=st=1741096612~exp=1741100212~hmac=dd4729c6463d6b654616d6170da569f65f2f8fa95fd0c614828088bfd1e63001&w=900"
+            alt=""
+          />
+        </div>
+        <div class="hwi-slide">
+          <img
+            src="https://img.freepik.com/free-photo/beautiful-landscape-mountain-fuji_74190-3065.jpg?t=st=1741096626~exp=1741100226~hmac=da5bcc772c0741bf8d4293cf3b16d5390576d2934e03faa1213bc9e1019d688f&w=1060"
+            alt=""
+          />
+        </div>
+        <div class="hwi-slide">
+          <img
+            src="https://img.freepik.com/free-photo/maldives-island_74190-478.jpg?t=st=1741096642~exp=1741100242~hmac=b923d2822794b16818894e2a1a787786143316776fd383911926c01297733e78&w=1060"
+            alt=""
+          />
+        </div>
+        <div class="hwi-slide">
+          <img
+            src="https://img.freepik.com/premium-photo/lake-spring-green-yongbi-lake-seosan-south-chungcheong-province-korea_40171-219.jpg?w=1060"
+            alt=""
+          />
+        </div>
+        <div class="hwi-slide">
+          <img
+            src="https://img.freepik.com/free-photo/empty-photo-frames-wall_74190-10006.jpg?t=st=1741096653~exp=1741100253~hmac=442a4bbc4eb8371d693c055433338cd74a189febdd7ac429138dec9588fd70e6&w=1060"
+            alt=""
+          />
+        </div>
+        <div class="hwi-slide">
+          <img
+            src="https://img.freepik.com/premium-photo/autumn-forest-naejangsan-national-park-south-korea_40171-130.jpg?w=1060"
+            alt=""
+          />
+        </div>
+        <div class="hwi-slide">
+          <img
+            src="https://img.freepik.com/premium-photo/front-gate-chiang-kai-shek-memorial-hall-taipei-city-taiwan_40171-339.jpg?w=1380"
+            alt=""
+          />
+        </div>
+        <div class="hwi-slide">
+          <img
+            src="https://img.freepik.com/premium-photo/taipei-taiwan-november-11-2019-main-gate-national-chiang-kai-shek-cks-memorial-hall-sunrise-taipei-taiwan_164138-149.jpg?w=1060"
+            alt=""
+          />
+        </div>
+      </div>
+    </div>
+
+    <ul>
+      <li><a href="javascript:;" onclick="t.goPage(0);">1</a></li>
+      <li><a href="javascript:;" onclick="t.goPage(1);">2</a></li>
+      <li><a href="javascript:;" onclick="t.goPage(2);">3</a></li>
+      <li><a href="javascript:;" onclick="t.goPage(3);">4</a></li>
+    </ul>
+
+    <script>
+      var t;
+
+      t = new hwiSwiper(document.getElementById("example"), {
+        transitionDuration: "500ms",
+      });
+      //	t.on("touchstart",function(e) {
+      //		//console.time("a");
+      //		return true;
+      //	});
+      //	t.on("touchmove",function(e) {
+      //		//console.log(e.type);
+      //		return true;
+      //	});
+      //	t.on("touchend",function(e) {
+      //		console.log(this.pos.momento.x);
+      //		if (this.pos.momento.x > 10)
+      //		{
+      //			return true;
+      //		} else {
+      //			return false;
+      //		}
+      //		return true;
+      //	});
+    </script>
+  </body>
+</html>
