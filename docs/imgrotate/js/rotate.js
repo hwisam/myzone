@@ -13,7 +13,7 @@ var imgPuzzleRotate = function (el, opt) {
   this.option = {
     horSpace: 5,
     verSpace: 4,
-    grap: 2,
+    grap: 5,
   };
 
   $.extend(this.option, opt);
@@ -57,7 +57,7 @@ imgPuzzleRotate.prototype.executeRotate = function () {
             setTimeout(function () {
               var cellIndex = $(v).index(),
                 deg = 0,
-                increase = 5,
+                increase = 50,
                 interval,
                 intervalFn;
 
