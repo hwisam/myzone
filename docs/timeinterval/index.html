@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>OnFit :: 레이어 팝업</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no"
+    />
+    <meta name="Generator" content="EditPlus®" />
+    <meta name="Author" content="" />
+    <meta name="Keywords" content="" />
+    <meta name="Description" content="" />
+    <title>Document</title>
+    <style>
+      .watch {
+        width: 210px;
+        height: 210px;
+        box-sizing: border-box;
+        border: 1px solid red;
+        border-radius: 210px;
+        position: relative;
+      }
+      .second {
+        width: 1px;
+        height: 210px;
+        background-color: transparent;
+        left: 105px;
+        top: -1px;
+        position: absolute;
+        transform: rotate(0deg);
+        /*
+    transition: all .1s ;
+	*/
+        border: 0;
+        box-sizing: border-box;
+      }
+      .second:before {
+        content: "";
+        position: absolute;
+        top: -1px;
+        left: -1px;
+        width: 3px;
+        height: 10px;
+        background-color: white;
+        border: 0;
+        z-index: 2;
+      }
+      .second:after {
+        content: "";
+        position: absolute;
+        width: 1px;
+        height: 100px;
+        background-color: black;
+        border: 0;
+      }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  </head>
+  <body>
+    <div class="watch">
+      <input
+        type="text"
+        style="position: absolute; top: 110px; width: 100px; left: 50px"
+      />
+      <div id="chatbot4" class="second">
+        <div
+          style="
+            position: absolute;
+            width: 1px;
+            height: 100px;
+            background-color: black;
+            border: 0;
+          "
+        ></div>
+      </div>
+    </div>
+
+    <script>
+      var loopCount = function (_opt, _cb) {
+        var opt = {
+          node: document,
+          tot: 10,
+          limit: 0,
+          initCnt: 0,
+          time: 5000,
+          type: "loop", // loop,loop-back,half-loop-back
+        };
+        $.extend(opt, _opt);
+
+        this.$el = $(opt.node);
+        this.initCnt = opt.initCnt;
+        this.type = opt.type;
+        this.tot = opt.tot;
+        this.retVal = 0;
+        this.limit = opt.limit;
+        this.limitLoop = 0;
+        this.intervalTime = opt.time;
+        this.half = this.tot / 2;
+
+        this.cb = typeof _cb == "function" ? _cb : function () {};
+      };
+      loopCount.prototype.init = function () {
+        this.retVal = this.initCnt;
+        this.cb();
+        this.initCnt++;
+        this.startMotion();
+      };
+      loopCount.prototype.destroy = function () {
+        this.stopMotion();
+        this.$el.addClass("unit" + this.tot);
+      };
+      loopCount.prototype.setPropertyByType = function (cnt) {
+        this.type == "loop-back" &&
+          function () {
+            this.type = "half-loop-back";
+            this.half = this.half * 2;
+            this.tot = this.tot * 2;
+            this.setPropertyByType(cnt);
+          }.bind(this)();
+
+        this.type == "half-loop-back" &&
+          function () {
+            if (cnt >= this.half) {
+              this.retVal = this.tot - cnt;
+            } else {
+              this.retVal = cnt;
+            }
+          }.bind(this)();
+
+        this.type == "loop" && (this.retVal = cnt);
+      };
+      loopCount.prototype.startMotion = function () {
+        var limitLoop = 0;
+        cnt = this.initCnt;
+
+        clearInterval(this.intVal);
+
+        this.intVal = setInterval(
+          function () {
+            this.setPropertyByType(cnt);
+
+            cnt++;
+
+            if (cnt >= this.tot) {
+              cnt = 1;
+              this.limitLoop++;
+
+              if (this.limitLoop >= this.limit) {
+                this.stopMotion();
+                !this.limit && this.startMotion();
+              } else {
+                this.stopMotion();
+                this.startMotion();
+              }
+            }
+
+            this.cb();
+          }.bind(this),
+          this.intervalTime
+        );
+      };
+      loopCount.prototype.stopMotion = function () {
+        this.initCnt = 0;
+        clearInterval(this.intVal);
+      };
+      loopCount.prototype.pauseMotion = function () {
+        this.initCnt = this.retVal + 1 == this.tot ? 0 : this.retVal + 1;
+        clearInterval(this.intVal);
+      };
+
+      var __opt = {
+        node: document.getElementById("chatbot4"),
+        time: 1000 / 5.985,
+        tot: 360,
+      };
+
+      var e = 0,
+        s = 0;
+      var a = new loopCount(__opt, function () {
+        //this.retVal%6==0 && console.timeEnd('start');
+        this.retVal % 6 == 0 && (s = window.performance.now());
+        this.retVal % 6 == 0 && console.log(s - e);
+
+        //this.retVal%6==0 && ((s-e)>2000 && alert('up'));
+
+        this.$el.css("transform", "rotate(" + this.retVal + "deg)");
+        this.retVal % 6 == 0 && this.$el.siblings("input").val(this.retVal / 6);
+        //this.retVal%6==0 && console.time('start');
+        this.retVal % 6 == 0 && (e = window.performance.now());
+      });
+      a.init();
+    </script>
+  </body>
+</html>

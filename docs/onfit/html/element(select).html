@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>OnFit :: 달력</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no"
+    />
+    <link rel="stylesheet" type="" href="../css/reset.css" />
+    <link rel="stylesheet" type="" href="../css/style.css" />
+    <style>
+
+
+      	body{height:1000px;}
+      	.hwi-wrap {
+      		position:relative;
+      		height:100%;
+      		overflow:hidden;
+      	}
+      	.hwi-wrap:hover {
+      		cursor: url('https://maps.gstatic.com/mapfiles/openhand_8_8.cur') 8 8, default;
+      	}
+      	.hwi-wrap.cursor-hand-active {
+      		cursor: url('https://maps.gstatic.com/mapfiles/closedhand_8_8.cur') 8 8, default;
+      	}
+      	.hwi-slide {
+      		display:none;
+      		overflow:hidden;
+      		position:absolute;
+      		width:100%;
+      		height:100%;
+      		transition-timing-function: ease-out;
+      	}
+      	.hwi-slide.active {
+      		display:block;
+      	}
+
+
+
+
+      	.hwi-wrap {width:100%;height:250px;border:1px solid gray;}
+      	.hwi-slide img {width:100%;height:50px;}
+
+      	.box a {font-size:13px;text-decoration: underline;}
+      	pre {
+      		margin: 10px;
+      		padding: 5px;
+      		overflow: auto;
+      		box-shadow: 2px 2px 4px 0px #3c3c3c;
+      		border-radius: 5px;
+      		font-size: 13px;
+      	}
+
+
+
+      	.checkbox {display: inline-block;vertical-align:middle}
+      	.checkbox > * {vertical-align:middle;padding:0;margin:0}
+      	.checkbox input {display:none;}
+      	.checkbox input + i {transition: all .5s;background-color:#dedede;width:16px;height:16px;display:inline-block}
+      	.checkbox input:checked + i {position: relative;background-color:blue}
+      	.checkbox input:checked + i:after {content: "";position: absolute;top: -3px;left: 5px;width: 6px;height: 14px;border: 2px solid #fff;transform: rotateZ(45deg);border-top: 0;border-left: 0;}
+
+      	.radio {display: inline-block;vertical-align:middle}
+      	.radio > * {vertical-align:middle;padding:0;margin:0}
+      	.radio input {display:none;}
+      	.radio input + i {transition: all .5s;background-color:#dedede;width:16px;height:16px;display:inline-block;border-radius: 15px;}
+      	.radio input:checked + i {position:relative;box-shadow:inset 0px 0px 5px blue;}
+      	.radio input:checked + i:after {content: "";position: absolute;top: 4px;left: 4px;width: 8px;height: 8px;border-radius: 8px;background-color:blue}
+
+      	.calendar {}
+      	.calendar .hide {visibility: hidden;height:0 !important}
+      	.calendar .head {overflow:hidden}
+      	.calendar .head em,
+      	.calendar .content .day{float:left;width:14.28%;height:25px;}
+      	.calendar .head em {font-size:13px;}}
+      	.calendar .content {overflow:hidden}
+      	.calendar .content .day {font-size:13px;}}
+      	.calendar .content .day.clear {clear:both}
+      	.calendar .content .day.now {background-color:blue;}
+
+      	.calendar .hwi-wrap {position:relative;width:100%;height:150px;border:1px solid gray;overflow:hidden;	}
+      	.calendar .hwi-slide {display:none;overflow:hidden;position:absolute;width:100%;height:100%;}
+      	.calendar .hwi-slide.active {display:block;}
+
+
+
+
+
+
+      /* customer-select */
+      .customer-select-group {display:block;}
+      .customer-select-group .box {display:inline-block;width:100px;height:250px;overflow:hidden;position:relative}
+      .customer-select-group .mask {position: absolute;top: 0;left: 0;height: 100%;margin: 0 auto;width: 100%;z-index: 3;
+          background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.6)), linear-gradient(to top, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.6));
+          background-position: top, bottom;
+          background-size: 100% 102px;
+          background-repeat: no-repeat;
+      }
+      .customer-select-group .datum {position: absolute;top: 100px;height: 50px;width: 100px;border: 1px solid black;background-color: #e8e4e4;}
+      .customer-select-group .hwi-slide {line-height:50px;font-size:15px;text-align:center;}
+
+
+
+
+
+
+
+
+      	.layer-pop {position:fixed;top:0;left:0;}
+      	.layer-pop .layer-content-wrap {
+      		display: block;
+      		position: fixed;
+      		overflow: auto;
+      		width: 100%;
+      		height: 100%;
+      		top: 0px;
+      		left: 0px;
+      		text-align: center;
+      		font-size: 0px;
+      		opacity: 1;
+      		visibility: visible;
+      	}
+      	.layer-pop .layer-content-wrap .layer-content {
+      		display: inline-block;
+      		position: relative;
+      		max-width: 80%;
+      		min-width: 55%;
+      		margin: 5% 0;
+      		text-align: left;
+      		vertical-align: middle;
+      		background-color: #fff;
+      		font-size: 13px;
+      		box-shadow: 4px 7px 20px 0px #000000;
+
+      		outline: none;
+      		opacity: 1;
+      		visibility: visible;
+      	}
+      	.layer-pop .layer-content-wrap .layer-content-btn {
+      	}
+      	.layer-pop .layer-content-wrap .layer-content-btn a {
+      		display:inline-block;
+      		text-align:center;
+      	}
+      	.layer-pop .layer-content-wrap button.click-close {
+      		display:none;
+      	}
+      	.layer-pop .layer-content-wrap .layer-content-dummy {
+      		display: inline-block;
+      		vertical-align: middle;
+      		height: 100%;
+      	}
+      	.layer-pop .layer-bg {
+      		position: fixed;
+      		top: 0px;
+      		right: 0px;
+      		bottom: 0px;
+      		left: 0px;
+      		background-color: #000;
+      		z-index:-1;
+      		opacity: 0.3;
+      		visibility: visible;
+      	}
+      	.layer-pop.page .layer-content {
+      		display: inline-block;
+      		position: relative;
+      		width: 100%;
+      		max-width: 100%;
+      		min-height: 100%;
+      		margin:0;
+      		text-align: left;
+      		vertical-align: middle;
+      		background-color: #fff;
+      		font-size: 13px;
+
+
+      		outline: none;
+      		opacity: 1;
+      		visibility: visible;
+      	}
+      	.layer-pop.page .layer-content-wrap button.click-close {
+      		display:block;
+      		position: fixed;
+      		top: 7px;
+      		right: 7px;
+      		z-index:3;
+      	}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header id="headerWrap" class="fixed">
+        <div class="header">
+          <h1 class="headerTitle">달력</h1>
+          <button type="button" class="btnR btnClose">닫기</button>
+        </div>
+      </header>
+
+      <div class="contentWrap">
+        <ul>
+          <li><a href="#none" onclick="layerAlert()">레이어팝업(알럿)</a></li>
+          <li><a href="#none" onclick="layerPage()">레이어팝업(페이지)</a></li>
+        </ul>
+        <div class="box">
+          <label class="checkbox">
+            <input type="checkbox" /><i></i> 체크1
+          </label>
+          <label class="checkbox">
+            <input type="checkbox" /><i></i> 체크2 </label
+          ><br />
+          <label class="radio">
+            <input type="radio" name="a" /><i></i> 선택1</label
+          >
+          <label class="radio">
+            <input type="radio" name="a" /><i></i> 선택2</label
+          >
+          <label class="radio">
+            <input type="radio" name="a" /><i></i> 선택3</label
+          >
+          <label class="radio">
+            <input type="radio" name="a" /><i></i> 선택4</label
+          >
+        </div>
+        <br />
+        <div class="customer-select-group">
+          <div class="box">
+            <div id="a1">
+              <div class="mask"></div>
+              <div class="datum"></div>
+              <div class="hwi-wrap">
+                <div class="hwi-slide">1 회차</div>
+                <div class="hwi-slide">2 회차</div>
+                <div class="hwi-slide">3 회차</div>
+                <div class="hwi-slide">4 회차</div>
+                <div class="hwi-slide">5 회차</div>
+                <div class="hwi-slide">6 회차</div>
+                <div class="hwi-slide">7 회차</div>
+                <div class="hwi-slide">8 회차</div>
+                <div class="hwi-slide">9 회차</div>
+                <div class="hwi-slide">10 회차</div>
+              </div>
+            </div>
+          </div>
+          <div class="box">
+            <div id="a2">
+              <div class="mask"></div>
+              <div class="datum"></div>
+              <div class="hwi-wrap">
+                <div class="hwi-slide">1 회차</div>
+                <div class="hwi-slide">2 회차</div>
+                <div class="hwi-slide">3 회차</div>
+                <div class="hwi-slide">4 회차</div>
+                <div class="hwi-slide">5 회차</div>
+                <div class="hwi-slide">6 회차</div>
+                <div class="hwi-slide">7 회차</div>
+                <div class="hwi-slide">8 회차</div>
+                <div class="hwi-slide">9 회차</div>
+                <div class="hwi-slide">10 회차</div>
+              </div>
+            </div>
+          </div>
+          <div class="box">
+            <div id="a3">
+              <div class="mask"></div>
+              <div class="datum"></div>
+              <div class="hwi-wrap">
+                <div class="hwi-slide">1 회차</div>
+                <div class="hwi-slide">2 회차</div>
+                <div class="hwi-slide">3 회차</div>
+                <div class="hwi-slide">4 회차</div>
+                <div class="hwi-slide">5 회차</div>
+                <div class="hwi-slide">6 회차</div>
+                <div class="hwi-slide">7 회차</div>
+                <div class="hwi-slide">8 회차</div>
+                <div class="hwi-slide">9 회차</div>
+                <div class="hwi-slide">10 회차</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="box">
+          <div id="example">
+            <div class="hwi-wrap" style="width: 400px; height: 150px">
+              <div class="hwi-slide">
+                -1<img
+                  src="http://cdn.boribori.co.kr/Images_Product/DefaultZoom/MVE/P020348386.jpg?RS=320x0"
+                  alt=""
+                />
+              </div>
+              <div class="hwi-slide">
+                0<img
+                  src="http://cdn.boribori.co.kr/Images_Product/DefaultZoom/MVE/P020348386.jpg?RS=320x0"
+                  alt=""
+                />
+              </div>
+              <div class="hwi-slide">
+                1<img
+                  src="http://cdn.boribori.co.kr/Images_Product/DefaultZoom/MVE/P020348386.jpg?RS=320x0"
+                  alt=""
+                />
+              </div>
+              <div class="hwi-slide">
+                -1<img
+                  src="http://cdn.boribori.co.kr/Images_Product/DefaultZoom/MVE/P020348386.jpg?RS=320x0"
+                  alt=""
+                />
+              </div>
+              <div class="hwi-slide">
+                0<img
+                  src="http://cdn.boribori.co.kr/Images_Product/DefaultZoom/MVE/P020348386.jpg?RS=320x0"
+                  alt=""
+                />
+              </div>
+              <div class="hwi-slide">
+                1<img
+                  src="http://cdn.boribori.co.kr/Images_Product/DefaultZoom/MVE/P020348386.jpg?RS=320x0"
+                  alt=""
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="box">
+          <div id="b">
+            <div class="hwi-wrap" style="width: 400px; height: 150px">
+              <div class="hwi-slide">1 회차</div>
+              <div class="hwi-slide">2 회차</div>
+              <div class="hwi-slide">3 회차</div>
+              <div class="hwi-slide">4 회차</div>
+              <div class="hwi-slide">5 회차</div>
+              <div class="hwi-slide">6 회차</div>
+              <div class="hwi-slide">7 회차</div>
+              <div class="hwi-slide">8 회차</div>
+              <div class="hwi-slide">9 회차</div>
+              <div class="hwi-slide">10 회차</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="box">
+          <div id="c">
+            <div class="hwi-wrap" style="width: 200px; height: 300px">
+              <div class="hwi-slide">
+                <img
+                  src="https://images.unsplash.com/photo-1740750958991-19f18db5a676?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDJ8eEh4WVRNSExnT2N8fGVufDB8fHx8fA%3D%3D"
+                  alt=""
+                />
+              </div>
+              <div class="hwi-slide">
+                <img
+                  src="https://plus.unsplash.com/premium_photo-1740083279235-2ae52dfedf60?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDN8eEh4WVRNSExnT2N8fGVufDB8fHx8fA%3D%3D"
+                  alt=""
+                />
+              </div>
+              <div class="hwi-slide">
+                <img
+                  src="https://images.unsplash.com/photo-1741017638667-fa948c3f38a1?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDd8eEh4WVRNSExnT2N8fGVufDB8fHx8fA%3D%3D"
+                  alt=""
+                />
+              </div>
+              <div class="hwi-slide">
+                -<img
+                  src="https://images.unsplash.com/photo-1741017638664-5a2d6096863f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDh8eEh4WVRNSExnT2N8fGVufDB8fHx8fA%3D%3D"
+                  alt=""
+                />
+              </div>
+              <div class="hwi-slide">
+                <img
+                  src="https://images.unsplash.com/photo-1740905546458-2b0199785aa3?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDExfHhIeFlUTUhMZ09jfHxlbnwwfHx8fHw%3D"
+                  alt=""
+                />
+              </div>
+              <div class="hwi-slide">
+                <img
+                  src="http://cdn.boribori.co.kr/Images_Product/DefaultZoom/MVE/P020348386.jpg?RS=320x0"
+                  alt=""
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="box">
+          <div id="d">
+            <div class="hwi-wrap" style="width: 200px; height: 300px">
+              <div class="hwi-slide">
+                <img
+                  src="https://images.unsplash.com/photo-1740750958991-19f18db5a676?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDJ8eEh4WVRNSExnT2N8fGVufDB8fHx8fA%3D%3D"
+                  alt=""
+                />
+              </div>
+              <div class="hwi-slide">
+                <img
+                  src="https://plus.unsplash.com/premium_photo-1740083279235-2ae52dfedf60?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDN8eEh4WVRNSExnT2N8fGVufDB8fHx8fA%3D%3D"
+                  alt=""
+                />
+              </div>
+              <div class="hwi-slide">
+                <img
+                  src="https://images.unsplash.com/photo-1741017638667-fa948c3f38a1?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDd8eEh4WVRNSExnT2N8fGVufDB8fHx8fA%3D%3D"
+                  alt=""
+                />
+              </div>
+              <div class="hwi-slide">
+                -<img
+                  src="https://images.unsplash.com/photo-1741017638664-5a2d6096863f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDh8eEh4WVRNSExnT2N8fGVufDB8fHx8fA%3D%3D"
+                  alt=""
+                />
+              </div>
+              <div class="hwi-slide">
+                <img
+                  src="https://images.unsplash.com/photo-1740905546458-2b0199785aa3?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDExfHhIeFlUTUhMZ09jfHxlbnwwfHx8fHw%3D"
+                  alt=""
+                />
+              </div>
+              <div class="hwi-slide">
+                <img
+                  src="http://cdn.boribori.co.kr/Images_Product/DefaultZoom/MVE/P020348386.jpg?RS=320x0"
+                  alt=""
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript" src="../js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="../js/hwi-layerpop.js"></script>
+    <script type="text/javascript" src="../js/n_hwi-swiper.js"></script>
+    <script>
+      new hwiSwiper(document.getElementById("a1"), {
+        transitionDuration: "350ms",
+        screenForm: "list",
+        direction: "vertical",
+        defaultY: 50,
+        boundGuide: 100,
+      });
+      new hwiSwiper(document.getElementById("a2"), {
+        transitionDuration: "350ms",
+        screenForm: "list",
+        direction: "vertical",
+        defaultY: 50,
+        boundGuide: 100,
+      });
+      new hwiSwiper(document.getElementById("a3"), {
+        transitionDuration: "350ms",
+        screenForm: "list",
+        direction: "vertical",
+        defaultY: 50,
+        boundGuide: 100,
+      });
+
+      new hwiSwiper(document.getElementById("example"), {
+        transitionDuration: "350ms",
+        direction: "horizontal",
+      });
+      new hwiSwiper(document.getElementById("b"), {
+        transitionDuration: "350ms",
+        screenForm: "list",
+        direction: "horizontal",
+        defaultX: 100,
+      });
+
+      new hwiSwiper(document.getElementById("c"), {
+        transitionDuration: "350ms",
+        screenForm: "page",
+        direction: "vertical",
+        defaultY: 300,
+      });
+      new hwiSwiper(document.getElementById("d"), {
+        transitionDuration: "350ms",
+        screenForm: "list",
+        direction: "vertical",
+        defaultY: 150,
+      });
+
+      //$(k.SlideNode.node).index(document.getElementById("hwisam2"))
+
+      var layerAlert = function () {
+        var opt = {
+          type: "alert",
+          cls: "alert",
+          header: "레이어 팝업 알람창",
+          content:
+            "<div class='box'><div id='num3'><div class='mask'></div><div class='datum'></div><div class='hwi-wrap'><div class='hwi-slide'>1 회차</div><div class='hwi-slide'>2 회차</div><div class='hwi-slide'>3 회차</div><div class='hwi-slide'>4 회차</div><div class='hwi-slide'>5 회차</div><div class='hwi-slide'>6 회차</div><div class='hwi-slide'>7 회차</div><div class='hwi-slide'>8 회차</div><div class='hwi-slide'>9 회차</div><div class='hwi-slide'>10 회차</div></div></div></div>",
+          btn: [
+            {
+              txt: "취소",
+              bg: "yellow",
+              fn: function () {
+                alert("취소");
+                this.destroy();
+              },
+            },
+            {
+              txt: "확인",
+              bg: "blue",
+              fn: function () {
+                alert("확인");
+              },
+            },
+          ], //{text:"",fn:""}
+        };
+
+        new layerPop(opt);
+        new hwiSwiper(document.getElementById("num3"), {
+          transitionDuration: "500ms",
+          screenForm: "list",
+          direction: "vertical",
+          defaultY: 50,
+        });
+      };
+
+      var layerPage = function () {
+        var opt = {
+          type: "page",
+          cls: "page",
+          header: "레이어 팝업 알람창",
+          content:
+            "<div class='box'><div id='num4'><div class='mask'></div><div class='datum'></div><div class='hwi-wrap'><div class='hwi-slide'>1 회차</div><div class='hwi-slide'>2 회차</div><div class='hwi-slide'>3 회차</div><div class='hwi-slide'>4 회차</div><div class='hwi-slide'>5 회차</div><div class='hwi-slide'>6 회차</div><div class='hwi-slide'>7 회차</div><div class='hwi-slide'>8 회차</div><div class='hwi-slide'>9 회차</div><div class='hwi-slide'>10 회차</div></div></div></div>",
+          btn: [
+            {
+              txt: "취소",
+              bg: "yellow",
+              fn: function () {
+                alert("취소");
+                this.destroy();
+              },
+            },
+            {
+              txt: "확인",
+              bg: "blue",
+              fn: function () {
+                alert("확인");
+              },
+            },
+          ], //{text:"",fn:""}
+        };
+
+        new layerPop(opt);
+        new hwiSwiper(document.getElementById("num4"), {
+          transitionDuration: "500ms",
+          screenForm: "list",
+          direction: "vertical",
+          defaultY: 50,
+        });
+      };
+
+      //var k = new hwiSwiper(document.getElementById("example1"),{transitionDuration:'500ms'});
+      /*
+new hwiSwiper(document.getElementById("example1"),{transitionDuration:'500ms'});
+var calObj = new hwiCalendar(document.getElementById("calendar"));
+calObj.initSwiper("week");
+*/
+      //	t.on("touchstart",function(e) {
+      //		//console.time("a");
+      //		return true;
+      //	});
+      //	t.on("touchmove",function(e) {
+      //		//console.log(e.type);
+      //		return true;
+      //	});
+      //	t.on("touchend",function(e) {
+      //		console.log(this.pos.momento.x);
+      //		if (this.pos.momento.x > 10)
+      //		{
+      //			return true;
+      //		} else {
+      //			return false;
+      //		}
+      //		return true;
+      //	});
+    </script>
+  </body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>OnFit</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no"
+    />
+    <link rel="stylesheet" type="" href="../css/reset.css" />
+    <link rel="stylesheet" type="" href="../css/style.css" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      .area {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        border: 1px solid green;
+      }
+
+      /* css drag&drop */
+      .hwi-touch-ing {
+        position: absolute !important;
+        z-index: 1;
+      }
+      /*
+.hwi-touch-drop {background: url('../../images/btn_reest.png') no-repeat top left #edf4ff;background-size:18px 18px;}
+*/
+      .hwi-touch-point {
+        display: block;
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        top: 0;
+        left: 0;
+        background-color: red;
+      }
+      .hwi-block {
+        display: block;
+      }
+      .hwi-block.inner-hover:not(.hwi-touch-ing) {
+        opacity: 0.5;
+      }
+      .hwi-block.clone {
+        opacity: 0.5;
+        border: 5px dotted #fff;
+      }
+      .hwi-block.target {
+        opacity: 0.5;
+        background-color: #f1f1f1;
+      }
+
+      .sportItem .sportBox {
+        position: relative;
+        margin: 10px 10px 10px;
+        padding: 17px 20px 19px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header id="headerWrap" class="fixed">
+        <div class="header">
+          <h1 class="headerTitle">Layer-popup</h1>
+          <button type="button" class="btnR btnClose">닫기</button>
+        </div>
+      </header>
+      <div class="contentWrap">
+        <!--
+			<div class="area box1" id="zone" >
+				<div class="hwi-block hwi-touch-drop"><div style="width:100%;height:100%;padding-top:20px;background-color:red">innerContent</div></div>
+				<div class="hwi-block hwi-touch-drop">2</div>
+				<div class="hwi-block hwi-touch-drop"><div style="width:100%;height:100%;padding-top:20px;background-color:green">innerContent</div></div>
+				<div class="hwi-block hwi-touch-drop">4</div>
+				<div class="hwi-block hwi-touch-drop"><a herf="#none" style="display:inline-block;width:50px;height:50px;border:1px solid red">5</a></div>
+				<div class="hwi-block hwi-touch-drop">6</div>
+			</div>
+		-->
+
+        <div class="section">
+          <div class="flexBox bgGray">
+            <!-- 출석체크 -->
+            <section class="ftop secBox">
+              <div class="attendBox">
+                <dl>
+                  <dt class="fontS14">2018년 5월 7일(월)</dt>
+                  <dd>운동여부 <span class="fontBlue">참석</span></dd>
+                  <!-- 참석일 경우 .fontBlue, 불참일 경우 .fontRed -->
+                  <dd>PT서명 <span class="fontRed">미완료</span></dd>
+                  <!-- 완료일 경우 .fontBlue, 미완료일 경우 .fontRed -->
+                </dl>
+                <button type="button" class="btnLineGray">출석체크</button>
+              </div>
+            </section>
+            <!-- // 출석체크 -->
+            <!-- 운동항목 -->
+            <section class="row secBox">
+              <div class="sportItem" id="zone">
+                <!-- 운동항목 박스 -->
+                <dl class="sportBox hwi-block hwi-touch-drop">
+                  <dt class="tit">덤벨암컬</dt>
+                  <dd>
+                    <ul class="itemsList">
+                      <li>
+                        <span class="txtBox">1세트</span>
+                        <div class="sportInfo">
+                          <span class="traning"><em>220</em>kg</span>
+                          <span class="number"><em>10</em>회</span>
+                        </div>
+                      </li>
+                      <li>
+                        <span class="txtBox">2세트</span>
+                        <div class="sportInfo">
+                          <span class="traning"><em>22</em>kg</span>
+                          <span class="number"><em>10</em>회</span>
+                        </div>
+                      </li>
+                      <li>
+                        <span class="txtBox">3세트</span>
+                        <div class="sportInfo">
+                          <span class="traning"><em>220</em>kg</span>
+                          <span class="number"><em>5</em>회</span>
+                        </div>
+                      </li>
+                    </ul>
+                  </dd>
+                  <button class="btnModify">수정하기</button>
+                  <span class="hwi-touch-point"></span>
+                </dl>
+                <!-- // 운동항목 박스 -->
+                <!-- 운동항목 박스 - 시간일때 -->
+                <dl class="sportBox hwi-block hwi-touch-drop">
+                  <dt class="tit">트레이드밀</dt>
+                  <dd>
+                    <ul class="itemsList itemsLisTimer">
+                      <li>
+                        <div class="sportInfo">
+                          <span class="time"><em>20</em>분</span>
+                        </div>
+                      </li>
+                    </ul>
+                  </dd>
+                  <button class="btnModify">수정하기</button>
+                  <span class="hwi-touch-point"></span>
+                </dl>
+                <!-- // 운동항목 박스 - 시간일때 -->
+                <!-- 운동항목 박스 - 시간일때 -->
+                <dl class="sportBox hwi-block hwi-touch-drop">
+                  <dt class="tit">바이크</dt>
+                  <dd>
+                    <ul class="itemsList itemsLisTimer">
+                      <li>
+                        <div class="sportInfo">
+                          <span class="time"><em>20</em>분</span>
+                        </div>
+                      </li>
+                    </ul>
+                  </dd>
+                  <button class="btnModify">수정하기</button>
+                  <span class="hwi-touch-point"></span>
+                </dl>
+                <!-- // 운동항목 박스 - 시간일때 -->
+                <!-- 운동항목 박스 -->
+                <dl class="sportBox hwi-block hwi-touch-drop">
+                  <dt class="tit">원암트리아셉스익스텐션</dt>
+                  <dd>
+                    <ul class="itemsList">
+                      <li>
+                        <span class="txtBox">1세트</span>
+                        <div class="sportInfo">
+                          <span class="traning"><em>220</em>kg</span>
+                          <span class="number"><em>10</em>회</span>
+                        </div>
+                      </li>
+                      <li>
+                        <span class="txtBox">2세트</span>
+                        <div class="sportInfo">
+                          <span class="number"><em>10</em>회</span>
+                        </div>
+                      </li>
+                      <li>
+                        <span class="txtBox">3세트</span>
+                        <div class="sportInfo">
+                          <span class="traning"><em>220</em>kg</span>
+                          <span class="number"><em>5</em>회</span>
+                        </div>
+                      </li>
+                      <li>
+                        <span class="txtBox">4세트</span>
+                        <div class="sportInfo">
+                          <span class="number"><em>10</em>회</span>
+                        </div>
+                      </li>
+                      <li>
+                        <span class="txtBox">5세트</span>
+                        <div class="sportInfo">
+                          <span class="traning"><em>220</em>kg</span>
+                          <span class="number"><em>5</em>회</span>
+                        </div>
+                      </li>
+                    </ul>
+                  </dd>
+                  <button class="btnModify">수정하기</button>
+                  <span class="hwi-touch-point"></span>
+                </dl>
+                <!-- // 운동항목 박스 -->
+              </div>
+            </section>
+            <!-- // 운동항목 -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/hwi-drag.js"></script>
+    <script type="text/javascript" src="../js/hwi-drop.js"></script>
+    <script>
+      var k = new hwiDrop(document.getElementById("zone"));
+    </script>
+  </body>
+</html>

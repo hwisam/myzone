@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>OnFit :: 레이어 팝업</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+	<link rel="stylesheet" type="" href="../css/reset.css">
+	<link rel="stylesheet" type="" href="../css/style.css">
+
+	<style>
+		pre {background-color:initial;border:0;}
+		code {max-height:250px;overflow-y:auto;text-align:left;}
+		code.include {background-color:#eaeaff}
+	</style>
+
+	<style>
+	.box a {font-size:13px;text-decoration: underline;}
+	pre {
+		margin: 10px;
+		padding: 5px;
+		overflow: auto;
+		box-shadow: 2px 2px 4px 0px #3c3c3c;
+		border-radius: 5px;
+		font-size: 13px;
+	}
+
+/* CSS 레이어팝업 */
+.layer-pop {position:fixed;top:0;left:0}
+.layer-pop .layer-content-wrap {display:block;position:fixed;overflow:auto;width:100%;height:100%;top:0;left:0;text-align:center;font-size:0;opacity:1;visibility:visible}
+.layer-pop .layer-content-wrap .layer-content {display:inline-block;position:relative;max-width:80%;margin:5% 0;text-align:left;vertical-align:middle;background-color:#fff;font-size:13px;box-shadow:4px 7px 20px 0 #000;outline:0;opacity:1;visibility:visible}
+.layer-pop .layer-content-wrap .layer-content-btn a {display:inline-block;text-align:center}
+.layer-pop .layer-content-wrap button.click-close {display:none}
+.layer-pop .layer-content-wrap .layer-content-dummy {display:inline-block;vertical-align:middle;height:100%}
+.layer-pop .layer-bg {position:fixed;top:0;right:0;bottom:0;left:0;background-color:#000;z-index:-1;opacity:.3;visibility:visible}
+.layer-pop.page .layer-content {display:inline-block;position:relative;width:100%;max-width:100%;min-height:100%;margin:0;text-align:left;vertical-align:middle;background-color:#fff;font-size:13px;outline:0;opacity:1;visibility:visible}
+.layer-pop.page .layer-content-wrap button.click-close {display:block;position:fixed;top:7px;right:7px;z-index:3}
+
+	</style>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+</head>
+<body>
+	<div class="wrap">
+		<header id="headerWrap" class="fixed">
+			<div class="header">
+				<h1 class="headerTitle">Layer-popup</h1>
+				<button type="button" class="btnR btnClose">닫기</button>
+			</div>
+		</header>
+
+		<div class="contentWrap">
+			<pre>
+				<code class="js include">
+	var
+	layerPop = (function() {
+		var
+			form = '<div class="layer-pop" style="z-index:10000;">'+
+			'	<div class="layer-content-wrap click-close">'+
+			'		<div class="layer-content" >'+
+			'			<div class="layer-bg click-close"></div>'+
+			'			<h2 class="layer-content-tit">sample</h2>'+
+			'			<div class="layer-content-cont">sample</div>'+
+			'			<div  class="layer-content-btn"></div>'+
+			'			<button class="click-close">닫기</button>'+
+			'		</div>'+
+			'		<div class="layer-content-dummy"></div>'+
+			'	</div>'+
+			'</div>';
+		return 	function(_opt) {
+					this.$el = $(form);
+					this.scope = "layerpop";
+					this.gScope = "layerpop"+(new Date()).getTime();
+					this.opt = {
+						type	: "alert",
+						cls		: "alert",
+						header	: "header",
+						content	: "content",
+						btn		: [], //{txt:"",fn:""}
+					}
+					$.extend(this.opt,_opt);
+
+					this.init();
+				}
+	})();
+
+layerPop.prototype.init = function() {
+	this.setLayerPop();
+	this.drawLayerPop();
+	this.bindEvent();
+};
+layerPop.prototype.destroy = function() {
+	this.unbindEvent();
+	this.$el.remove();
+};
+layerPop.prototype.drawLayerPop = function() {
+	$("body").prepend(this.$el);
+	this._checkDupl();
+};
+layerPop.prototype.setLayerPop = function() {
+	this._setZindex();
+	this._setClass();
+	this._setTitle();
+	this._setContent();
+	this._setBtn();
+};
+layerPop.prototype._setZindex = function() {
+	if (this.constructor.bodyStyleOverflow == undefined ) {
+		this.constructor.bodyStyleOverflow	= document.body.style.overflow;
+		this.constructor.elZindex		= parseInt(this.$el.css("z-index"));
+	}
+	this.$el.css("z-index",(++this.constructor.elZindex));
+	//el.css("height",$(window).outerHeight()+'px');
+};
+layerPop.prototype._setClass = function() {
+	this.$el.addClass(this.opt.cls);
+};
+layerPop.prototype._setTitle = function() {
+	this.$el.find(".layer-content-tit").html(this.opt.header);
+};
+layerPop.prototype._setContent = function() {
+	this.$el.find(".layer-content-cont").html(this.opt.content);
+};
+layerPop.prototype._setBtn = function() {
+	var
+		_n = 0,
+		_$btn,
+		$frgment,
+		leng = this.opt.btn.length;
+
+	if (!leng || this.opt.type != "alert") {
+		this.$el.find(".layer-content-btn").remove();
+	} else {
+		$frgment = $(document.createDocumentFragment());
+		for(_n; _n<leng; _n++) {
+			_$btn = $("<a href='#none' class='active' >"+this.opt.btn[_n].txt+"</a>");
+			_$btn.css({"background-color":this.opt.btn[_n].bg,"width":(100/leng)+"%"});
+			_$btn.bind('customEvent',this.opt.btn[_n].fn.bind(this));
+			$frgment.append(_$btn);
+		}
+		this.$el.find(".layer-content-btn").append($frgment);
+	}
+};
+layerPop.prototype.bindEvent = function() {
+	this.$el.bind("click."+this.scope,function(e) {
+		if ($(e.target).hasClass("click-close")) {
+			this.destroy();
+		} else if ($(e.target).hasClass("active")) {
+			e.preventDefault();
+			$(e.target).trigger("customEvent");
+		}
+	}.bind(this));
+	/*
+	$(".container").bind("touchmove."+this.gScope,function(e) {
+		console.log(this);
+		e.preventDefault();
+		e.stopPropagation();
+	});
+	*/
+
+	/*
+	(function() {
+		var
+			that = this;
+
+		$(window).bind("resize."+that.gScope,function(e) {
+			var
+				scroll = window.scrollY || window.pageYOffset|| document.documentElement.scrollTop;
+
+			that.$el.css("top",scroll);
+			that.opt.type == "page" && that.$el.find(".content").height($(window).height());
+		});
+	}.bind(this))();
+	*/
+};
+layerPop.prototype.unbindEvent =  function() {
+	this.$el.unbind("click."+this.scope);
+	/*
+	this.$el.find(".layer-content-wrap").unbind("touchmove."+this.scope);
+	*/
+};
+layerPop.prototype._checkDupl = function() {
+	var
+		$sibling = this.$el.siblings(".layer-pop:visible"),
+		margin;
+
+	if ($sibling.length>0) {
+		if (this.opt.type == "alert" ) {
+			//this.$el.css({"margin-top":parseInt($sibling.css("margin-top"))+10,"margin-left":parseInt($sibling.css("margin-left"))+10});
+		}
+		this.$el.find(".layer-bg").remove();
+	}
+};
+				</code>
+			</pre>
+			<div class="box">
+				<ul>
+					<li>
+						<a href="#none" class="pop">레이어 팝업(페이지)</a>
+<pre>
+var
+opt = {
+	type	: "page",
+	cls	: "page",
+	header	: "레이어 팝업 페이지",
+	content	: "레이어 팝업 알람창레이어 팝업 알람창레이어 팝업 알람창레이어 팝업 알람창레이어 팝업 알람창레이어 팝업 알람창레이어 팝업 알람창레이어 팝업 알람창",
+	btn	: []
+}
+
+new layerPop(opt);
+</pre>
+					
+					</li>
+					<li><a href="#none" class="alert">레이어 팝업(알림창)</a>
+<pre>
+var
+opt = {
+	type	: "alert",
+	cls	: "alert",
+	header	: "레이어 팝업 알람창",
+	content	: "레이어 팝업 알람창레이어 팝업 알람창레이어 팝업 알람창레이어 팝업 알람창레이어 팝업 알람창",
+	//btn		: [],
+	btn	: [{txt:"취소",bg:"yellow",fn:function() {alert('취소');this.destroy();}},{txt:"확인",bg:"blue",fn:function() {alert('확인')}}], //{text:"",fn:""}
+}
+
+new layerPop(opt);
+</pre>					</li>
+				</ul>
+			<div>
+
+		</div>
+	</div>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<script type="text/javascript" src="../js/hwi-layerpop.js"></script>
+
+	<script>
+$(".box a").bind("click",function(e) {
+	if ($(e.target).hasClass("alert"))
+	{
+		var
+			opt = {
+				type	: "alert",
+				cls		: "alert",
+				header	: "레이어 팝업 알람창",
+				content	: "레이어 팝업 알람창레이어 팝업 알람창레이어 팝업 알람창레이어 팝업 알람창레이어 팝업 알람창",
+				//btn		: [],
+				btn		: [{txt:"취소",bg:"yellow",fn:function() {alert('취소');this.destroy();}},{txt:"확인",bg:"blue",fn:function() {alert('확인')}}], //{text:"",fn:""}
+			}
+
+		new layerPop(opt);
+
+	}
+
+	if ($(e.target).hasClass("pop"))
+	{
+		var
+			opt = {
+				type	: "page",
+				cls		: "page",
+				header	: "레이어 팝업 페이지",
+				content	: "레이어 팝업 알람창레이어 팝업 알람창레이어 팝업 알람창레이어 팝업 알람창레이어 팝업 알람창레이어 팝업 알람창레이어 팝업 알람창레이어 팝업 알람창",
+				btn		: []
+			}
+
+		new layerPop(opt);
+	}
+});
+</script>
+<script>
+$(document).ready(function() { 
+	$('pre code').each(function(i, block) { 
+
+		var str = block.innerHTML.replace(/</gi,"&lt;").replace(/>/gi,"&gt;").replace(/\t/gi,"  ");
+		$(this).empty().append(str);
+
+		hljs.highlightBlock(this);
+	});
+});
+</script>
+</body>
+</html>

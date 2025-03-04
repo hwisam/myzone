@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>OnFit :: 달력</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+	<link rel="stylesheet" type="" href="../css/reset.css">
+	<link rel="stylesheet" type="" href="../css/style.css">
+	<style>
+	.box a {font-size:13px;text-decoration: underline;}
+	pre {
+		margin: 10px;
+		padding: 5px;
+		overflow: auto;
+		box-shadow: 2px 2px 4px 0px #3c3c3c;
+		border-radius: 5px;
+		font-size: 13px;
+	}
+
+
+
+	/* CSS 레이어 팝업 */
+	.layer-pop {position:fixed;top:0;left:0}
+	.layer-pop .layer-content-wrap {display:block;position:fixed;overflow:auto;width:100%;height:100%;top:0;left:0;text-align:center;font-size:0;opacity:1;visibility:visible}
+	.layer-pop .layer-content-wrap .layer-content {display:inline-block;position:relative;max-width:80%;margin:5% 0;text-align:left;vertical-align:middle;background-color:#fff;font-size:13px;box-shadow:4px 7px 20px 0 #000;outline:0;opacity:1;visibility:visible}
+	.layer-pop .layer-content-wrap .layer-content-btn a {display:inline-block;text-align:center}
+	.layer-pop .layer-content-wrap button.click-close {display:none}
+	.layer-pop .layer-content-wrap .layer-content-dummy {display:inline-block;vertical-align:middle;height:100%}
+	.layer-pop .layer-bg {position:fixed;top:0;right:0;bottom:0;left:0;background-color:#000;z-index:-1;opacity:.3;visibility:visible}
+	.layer-pop.page .layer-content {display:inline-block;position:relative;width:100%;max-width:100%;min-height:100%;margin:0;text-align:left;vertical-align:middle;background-color:#fff;font-size:13px;outline:0;opacity:1;visibility:visible}
+	.layer-pop.page .layer-content-wrap button.click-close{display:block;position:fixed;top:7px;right:7px}
+
+
+	/* CSS 달력관련*/
+	.calendar {padding: 27px 10px 20px; background: #ebf2f8;}
+	.calendar .hide {visibility: hidden;height:0 !important}
+	.calendar .navi {text-align:center;font-size:14px;}
+	.calendar .navi .cal-info {text-align:center;font-size: 1.4rem; line-height: 1;}
+	.calendar .navi .cal-prev, .calendar .navi .cal-next {display: inline-block; overflow: hidden; position: relative; top: -1px; width: 7px; height: 12px; vertical-align: middle; text-indent: -9999px; background: url('../images/btn_go_gray.png') no-repeat center center/cover;}
+	.calendar .navi .cal-prev {transform: rotate(-180deg); margin-right: 30px;}
+	.calendar .navi .cal-next {margin-left:30px;}
+	.calendar .head {overflow:hidden}
+	.calendar .head em,
+	.calendar .content .day{float:left;width:14.28%;height:25px;}
+	.calendar .head em {height: 32px; line-height: 32px; font-size: 1.4rem; text-align: center;}
+	.calendar .content {overflow:hidden}
+	.calendar .content .day {position: relative; height: 32px; line-height: 32px; font-size: 1.4rem; text-align: center;}
+	.calendar .content .day.clear {clear:both}
+	.calendar .content .day.now {background: none; color: #fff;}
+	.calendar .content .day.now:before {content: ""; display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 28px; height: 28px; border-radius: 100%; background: #188cff; z-index: -1;}
+	.calendar .content .day.prev,
+	.calendar .content .day.next {color: #ced8e9;}
+	.calendar .hwi-wrap {position:relative;width:100%;height:150px;border:1px solid gray;overflow:hidden;border: 0 none;}
+	.calendar .hwi-slide {display:none;overflow:hidden;position:absolute;width:100%;height:100%;}
+	.calendar .hwi-slide.active {display:block;}
+	/* week */
+	.size-week .calendar {padding: 25px 20px 25px; background: #47b2ff;}
+	.size-week .calendar .hwi-wrap {height: 32px;}
+	.size-week .calendar .navi {margin-bottom: 18px;}
+	.size-week .calendar .navi .cal-info {color: #fff;}
+	.size-week .calendar .navi .cal-prev, .size-week .calendar .navi .cal-next {background-image: url('../images/btn_go_white.png');}
+	.size-week .calendar .head em {color: #fff;}
+	.size-week .calendar .content .day {color: #fff;}
+	.size-week .calendar .content .day.now {background: none; color: #47b2ff;}
+	.size-week .calendar .content .day.now:before {background: #fff;}
+	.size-week .calendar .content .day.active:after {content: ""; display: block; position: absolute; left: 50%; bottom: 1px; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 100%; background: #fff; z-index: 1;}
+	.size-week .calendar .content .day.dim {color:#b6b0ff}
+	/* month */
+	.size-month .calendar .hwi-wrap {height: 190px;}
+	.size-month .calendar .navi {margin-bottom: 18px;}
+	.size-month .calendar .content .day.dim {color:#a9a9a9}
+	/* year */
+	.size-year {}
+	.size-year .layer-content-wrap .layer-content {width:100%;max-width:95%}
+	.size-year .layer-content-wrap .layer-content-tit {border-color:#ebf2f8;background: #ebf2f8;height: 4rem;line-height: 3.9rem;}
+	.size-year .layer-content-wrap .layer-content-cont {background: #ebf2f8;padding: 40px 20px 15px;}
+	.size-year .navi {font-size: 1.4rem;}
+	.size-year .navi .cal-year-prev, .size-year .navi .cal-year-next {display: inline-block; overflow: hidden; position: relative; top: -1px; width: 7px; height: 12px; vertical-align: middle; text-indent: -9999px; background: url('../images/btn_go_gray.png') no-repeat center center/cover;}
+	.size-year .navi .cal-year-prev {transform: rotate(-180deg); margin-right: 30px;}
+	.size-year .navi .cal-year-next {margin-left: 30px;}
+	.size-year .navi .cal-year-info {font-size: 1.4rem;line-height: 1;}
+	.size-year .list {overflow: hidden;transform: translate3d(0px, 0px, 0px);}
+	.size-year .list li {float:left;position:relative;width:16.66%;height: 32px;line-height: 32px;text-align:center;font-size: 1.4rem;}
+	.size-year .list li.on {background: none; color: #fff;}
+	.size-year .list li.on:before {content: "";display: block;position: absolute;top: 50%;left: 50%;transform: translate(-50%,-50%);width: 28px;height: 28px;border-radius: 100%;background: #188cff;z-index: -1;left: 0; right: 0; transform: translateY(-50%); width: auto; height: 28px; border-radius: 14px;}
+
+	 /* day */
+	 .size-day {}
+	 .size-day .calendar {padding:10px;position: relative;}
+	 .size-day .calendar .hwi-slide.active {text-align: center;font-size: 14px;}
+	 .size-day .calendar .navi {display:none;position: absolute;top: 17px;left: calc( 50% - 90px );}
+	 .size-day .calendar .navi .cal-info {visibility: hidden;}
+	 .size-day .calendar .head {display:none}
+	 .size-day .calendar .hwi-wrap {height:35px;line-height:35px;}
+
+	</style>
+</head>
+<body>
+	<div class="wrap">
+		<header id="headerWrap" class="fixed">
+			<div class="header">
+				<h1 class="headerTitle">달력</h1>
+				<button type="button" class="btnR btnClose">닫기</button>
+			</div>
+		</header>
+
+		<div class="contentWrap">
+
+			<div class="box">
+				<ul>
+					<li>
+						<div id="calendar" class="size-week"></div>
+					</li>
+					<li>
+						<div id="calendar2" class="size-month"></div>
+					</li>
+					<li>
+						<div id="calendar3" class="size-day"></div>
+					</li>
+
+				</ul>
+<pre>
+var calObj = new hwiCalendar(document.getElementById("calendar"));
+
+calObj.init();  //정적 현재 달 그리기(주차 표현시 파라메타값 등록)
+calObj.initSwiper();  //동적 현재 달 그리기(주차 표현시 파라메타값 등록)
+
+calObj.prev();  //이전 달 셋팅
+calObj.next();  //이후 달 셋팅
+
+calObj.prevWeek();  //이전 주 셋팅
+calObj.nextWeek();  //이후 주 셋팅
+
+calObj.setDate(new Date('2011-01-02')); // 달 이동 셋팅
+
+calObj.drawCalendar(); // 정적 달력 그리기
+
+
+calObj.swiperObj.on("touchend",function() {
+	setTimeout(function() {
+		console.log(this)
+	},1000);
+	return true;
+});
+
+var calObj3 = new hwiCalendar(document.getElementById("calendar3"));
+calObj3.initSwiper("day");
+
+</pre>
+			<div>
+
+		</div>
+	</div>
+	<script type="text/javascript" src="../js/jquery-3.3.1.min.js"></script>
+	<script type="text/javascript" src="../js/hwi-swiper.js"></script>
+	<script type="text/javascript" src="../js/hwi-calendar.js?a"></script>
+	<script type="text/javascript" src="../js/hwi-calendar-day.js"></script>
+	<script type="text/javascript" src="../js/hwi-layerpop.js"></script>
+	<script>
+var calObj = new hwiCalendar(document.getElementById("calendar"));
+calObj.initSwiper("week");
+var calObj2 = new hwiCalendar(document.getElementById("calendar2"));
+calObj2.initSwiper();
+
+var calObj3 = new hwiCalendarDay(document.getElementById("calendar3"));
+calObj3.initSwiper("day");
+	</script>
+</body>
+</html>
