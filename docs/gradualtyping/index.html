@@ -67,7 +67,7 @@
       var stringGradual = function (el) {
         this.$el = $(el);
         this.stringVal;
-        this.typingTime = 300;
+        this.typingTime = 100;
         this.setTimeVal;
 
         this.stringDivision = [];
@@ -167,10 +167,10 @@
           if (e.currentTarget.id == "update") {
             a.reset();
           } else if (e.currentTarget.id == "speedUp") {
-            speed = speed - 100;
+            speed = speed - 10;
             a.updateTypingSpeed(speed);
           } else if (e.currentTarget.id == "speedDown") {
-            speed = speed + 100;
+            speed = speed + 10;
             a.updateTypingSpeed(speed);
           }
         });
