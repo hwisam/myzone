@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="kr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>HWI-HOMEPAGE</title>
+    <link
+      rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"
+    />
+    <style>
+      .rotate {
+        overflow: hidden;
+      }
+      .rotate .wrap {
+        float: left;
+        width: 50px;
+        margin: 0 0 2px 2px;
+        text-align: center;
+      }
+      .rotate i {
+        display: block;
+        background-color: gray;
+        font-weight: bold;
+        font-size: 50px;
+        color: black;
+        font-style: normal;
+        transition-timing-function: linear;
+        height: 50px;
+        overflow: hidden;
+      }
+
+      .rotate i.f {
+        line-height: 100px;
+      }
+      .rotate i.s {
+        margin-top: 2px;
+        line-height: 0;
+      }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  </head>
+  <body id="hwisam" style="height: 2000px">
+    <p>모바일 화면에 적합하게 작업되어 있습니다.</p>
+    <div class="rotate">2018년 Bye</div>
+
+    <div>
+      <a href="./hwiswiper/default.html">Demo[hwiSwiper]</a><br />
+      <a href="./gradualtyping/">Demo[gradualTyping]</a><br />
+      <a href="./imgrotate/">Demo[imgRotate]</a><br />
+      <!-- <a href="./drop/">Demo[drag&drop]</a><br/> -->
+      <a href="./stepcategory/index.html">Demo[stepcategory]</a><br />
+      <a href="./onfit/html/layerpop.html">Demo[layerpop]</a><br />
+      <a href="./onfit/html/dragndrop.html">Demo[drag&drop]</a><br />
+      <a href="./onfit/html/calendar.html">Demo[calendar]</a><br />
+      <a href="./onfit/html/chart.html">Demo[chart.js]</a><br />
+      <a href="./onfit/html/element.html">Demo[scrollable-date]</a><br />
+      <a href="./onfit/html/element_num.html">Demo[scrollable-num]</a><br />
+      <a href="./timeinterval/">Demo[time-interval]</a><br />
+      <a href="./hplayer/">Demo[player]</a><br />
+      <a href="./onfit/html/element(select).html">Demo[UI test]</a><br />
+    </div>
+
+    <script src="./drop/js/jquery-1.9.1.min.js" type="text/javascript"></script>
+    <script>
+      window.addEventListener("load", function () {
+        // Set a timeout...
+        setTimeout(function () {
+          // Hide the address bar!
+          window.scrollTo(0, 1);
+        }, 0);
+      });
+
+      (function (id) {
+        var $el = $("." + id),
+          $wrap,
+          $wrapForm = $("<div class='wrap'></div>"),
+          $iForm = $("<i>");
+
+        /* reset */
+        (function () {
+          var len = 0,
+            str = $el.text().trim();
+
+          $el.empty();
+          for (len; len < str.length; len++) {
+            $el.append(
+              $wrapForm
+                .clone()
+                .append($iForm.clone().addClass("f").text(str[len]))
+                .append($iForm.clone().addClass("s").text(str[len]))
+            );
+          }
+          $wrap = $el.find(".wrap");
+        })();
+
+        $wrap.each(function (i, v) {
+          $(v)
+            .find("i")
+            .each(function (i, v) {
+              (function () {
+                var rand = Math.random() * 800;
+
+                return (function () {
+                  // 각각 단일 아이템
+                  var duration = 5;
+
+                  setTimeout(function () {
+                    var deg = 0,
+                      increase = 5,
+                      interval,
+                      intervalFn;
+
+                    intervalFn = function () {
+                      interval = setInterval(function () {
+                        deg = deg + increase;
+                        $(v).css("transform", "rotateX(" + deg + "deg)");
+
+                        if (deg >= 720) {
+                          clearInterval(interval);
+                          deg = 0;
+                          duration = duration + 5;
+                          intervalFn();
+                        }
+                        if (duration == 20) {
+                          clearInterval(interval);
+                          deg = 0;
+                        }
+                      }, duration);
+                    };
+                    intervalFn();
+                  }, rand);
+                })();
+              })();
+            });
+        });
+      })("rotate");
+
+      /*
+(function() {
+  var devWidth, devHeight;
+  window.addEventListener('load', function() {
+    devWidth  = screen.width;
+    devHeight = screen.height;
+  });
+  window.addEventListener('orientationchange', function () {
+    if (devWidth < 768 && (window.orientation === 90 || window.orientation == -90)) {
+      document.body.style.width = devWidth + 'px';
+      document.body.style.height = devHeight + 'px';
+      document.body.style.transform = 'rotate(90deg)';
+      document.body.style.transformOrigin = ''+(devHeight/2)+'px '+(devHeight/2)+'px';
+    } else {
+      document.body.removeAttribute('style');
+    }
+  }, true);
+})();
+*/
+
+      //top.window.hideAddressBar();
+    </script>
+  </body>
+</html>
