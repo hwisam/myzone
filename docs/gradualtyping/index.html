@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="Generator" content="EditPlus®" />
+    <meta name="Author" content="" />
+    <meta name="Keywords" content="" />
+    <meta name="Description" content="" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <title>Document</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <style>
+      .string-gradual i:last-child {
+        display: inline-block;
+        padding-right: 10px;
+        background: url(./img/focus.gif) no-repeat right center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="check" class="string-gradual">
+      "정호성·차은택·김종, 증거인멸·진술협의 정황"…구치소 압수수색 朴대통령
+      뇌물수사 은폐 시도 우려…'조사거부' 최순실 구속영장 새로 검토
+      (서울=연합뉴스) 이세원 이보배 기자 = '최순실 게이트'와 박근혜 대통령의
+      비위 의혹을 수사 중인 박영수 특별검사팀은 최 씨에게 뇌물 혐의를 적용해
+      구속영장을 새로 청구하는 방안을 검토하고 있다. 특검팀 대변인인 이규철
+      특검보는 최 씨에 대해 기존에 검찰 특별수사본부가 기소한 사실 외에 새로운
+      범죄 사실을 인지해 새로 구속영장을 발부받는 방안을 고려 중이라고 4일
+      브리핑에서 밝혔다. 이 특검보는 새로 구속영장을 청구할 때 최 씨에게
+      "뇌물죄(혐의) 등의 가능성이 있다"고 강조했다. 최 씨에게 뇌물죄를
+      적용한다는 것은 최 씨가 박 대통령에게 무상 제공했다는 의혹을 산 옷과
+      가방을 염두에 뒀거나 박 대통령, 최 씨, 삼성그룹을 둘러싼 제삼자 뇌물
+      혐의를 의식한 발언으로 보인다. 최순실과 박근혜 대통령"(CG)[연합뉴스TV
+      제공] 특검은 국민연금이 박 대통령의 지시에 따라 삼성물산-제일모직의 합병에
+      찬성해 삼성그룹의 경영권 현안을 해결해 줬고 삼성전자가 이에 대한 보답으로
+      박 대통령의 측근인 최 씨 측에 거액의 자금을 지원한 것으로 의심하고 있다.
+      특검은 최 씨가 출석 요구를 반복해 거부하자 체포영장 또는 구속영장을
+      발부받아 강제 소환해 조사하는 방안을 검토 중이다. 정 씨는 정신적 충격
+      때문에 특검 조사에 출석할 수 없다는 사유서를 4일 제출했으며 특검은 딸
+      정유라 씨의 체포 소식 등이 최 씨에게 영향을 미쳤을 가능성이 있는 것으로
+      판단하고 있다. 정호성·차은택·김종[연합뉴스 자료사진] 특검은
+      정호성(구속기소) 전 청와대 부속비서관을 비롯해 최순실 게이트에 연루된
+      이들이 증거인멸을시도하거나 진술 짜 맞추기, 말 맞추기를 한 정황도 포착한
+      것으로 알려졌다. 이 특검보는 서울 남부구치소에 수감된 정 전 비서관의 방 등
+      관련자 3명이 수용된 방을 압수수색한 것에 대해 "대상자 3명뿐만 아니라 다른
+      사람들 사이의 증거인멸 정황, 서로 간의 진술협의 등을 고려한 것"이라고 4일
+      말했다. 그는 "기존에 (검찰에 의해) 기소된 사건뿐만 아니라 이번에 우리가
+      조사하는 사건을 모두 고려해서 압수수색을 한 것"이라고 부연했다. 특검팀은
+      박근혜 대통령의 뇌물 혐의 등을 염두에 둔 수사와 관련해 핵심 연루자가
+      조직적인 말 맞추기나 사건 은폐 등을 시도한 게 아닌지 의심하는 것으로
+      보인다. 특검은 전날 정 전 비서관이 수용된 방, 서울구치소(경기 의왕)에
+      수감된 '문화계 황태자' 차은택 씨와 김종 전 문화체육관광부 2차관의 수용실
+      등 3곳을 압수수색 했다.
+    </div>
+    <div style="position: absolute; top: 10px; right: 10px">
+      <button id="update">리셋</button>
+      <button id="speedUp">스피드업</button>
+      <button id="speedDown">스피드다운</button>
+    </div>
+
+    <script>
+      var stringGradual = function (el) {
+        this.$el = $(el);
+        this.stringVal;
+        this.typingTime = 300;
+        this.setTimeVal;
+
+        this.stringDivision = [];
+
+        this.__proto__.init = function () {
+          this.setDefault();
+          this.doStringDivision();
+          this.doAnimate();
+        };
+        this.__proto__.reset = function () {
+          this.$el.empty();
+          clearInterval(this.setTimeVal);
+          this.doAnimate();
+        };
+        this.__proto__.updateTypingSpeed = function (val) {
+          var _val = typeof val == "number" ? val : 300;
+
+          this.typingTime = _val;
+        };
+        this.__proto__.setDefault = function () {
+          this.stringVal = this.$el.text();
+          this.$el.text("");
+        };
+        this.__proto__.doStringDivision = function () {
+          var cnt = 0,
+            chars,
+            choSeong = [
+              0x3131, 0x3132, 0x3134, 0x3137, 0x3138, 0x3139, 0x3141, 0x3142,
+              0x3143, 0x3145, 0x3146, 0x3147, 0x3148, 0x3149, 0x314a, 0x314b,
+              0x314c, 0x314d, 0x314e,
+            ];
+
+          for (cnt; cnt < this.stringVal.length; cnt++) {
+            var _char = this.stringVal.charCodeAt(cnt);
+
+            if (_char >= 0xac00 && _char <= 0xd7a3) {
+              var i1, i2, i3;
+
+              i3 = _char - 0xac00;
+              i1 = i3 / (21 * 28); // 초성 체크(초성 배열값 index key)
+              i3 = i3 % (21 * 28); // 종성여부 체크
+              i2 = i3 / 28; // 중성 체크(중성 배열값 index key)
+              i3 = i3 % 28; // 종성 체크(종성 배열값 index key)
+
+              this.stringDivision.push(
+                String.fromCharCode(choSeong[parseInt(i1)])
+              );
+              this.stringDivision.push(String.fromCharCode(_char - i3));
+
+              if (i3 != 0x0000) {
+                this.stringDivision.push(String.fromCharCode(_char));
+              }
+              this.stringDivision.push("^");
+            } else {
+              if (_char == 10) {
+                this.stringDivision.push("<br/>");
+              } else {
+                this.stringDivision.push(String.fromCharCode(_char));
+              }
+              this.stringDivision.push("^");
+            }
+          }
+        };
+        this.__proto__.doAnimate = function () {
+          var time = 0,
+            cnt = 0,
+            $span,
+            loop = function () {
+              if (this.stringDivision[cnt] == "^" || cnt == 0) {
+                $span = $("<i>");
+                this.$el.append($span);
+                time = 0;
+              }
+
+              if (this.stringDivision[cnt] != "^") {
+                $span.html(this.stringDivision[cnt]);
+                time = this.typingTime;
+              }
+
+              cnt++;
+              this.setTimeVal = setTimeout(function () {
+                loop();
+              }, time);
+            }.bind(this);
+
+          loop();
+        };
+        this.init();
+      };
+
+      var a = new stringGradual(document.getElementById("check"));
+
+      (function () {
+        var speed = 100;
+
+        $("button").bind("click", function (e) {
+          if (e.currentTarget.id == "update") {
+            a.reset();
+          } else if (e.currentTarget.id == "speedUp") {
+            speed = speed - 100;
+            a.updateTypingSpeed(speed);
+          } else if (e.currentTarget.id == "speedDown") {
+            speed = speed + 100;
+            a.updateTypingSpeed(speed);
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>
