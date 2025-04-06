@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="Generator" content="EditPlus®" />
+    <meta name="Author" content="" />
+    <meta name="Keywords" content="" />
+    <meta name="Description" content="" />
+    <title>Document</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jplayer/2.9.2/add-on/jplayer.playlist.js"></script>
+    <style>
+      .video {position:relative;width:500px;height:300px;}
+      .video video {width:100%;height:100%}
+      .video .video-control {position:absolute;width:100%;bottom:30px;}
+      .video .video-progress {width:100%;height:10px;border:0}
+      .video .video-progress .video-progress-status {	position: absolute;
+      	height: 100%;
+      	background-color: blue;
+      	width: ;
+      	height: 10px;
+      	/*
+      	transition: all .3s;
+      	transition-timing-function:linear;
+      	*/
+      	z-index:3
+      }
+      .video .video-progress .video-progress-buffer-status {	position: absolute;
+      	height: 100%;
+      	background-color: gray;
+      	width: ;
+      	height: 10px;
+      	/*
+      	transition: all .1s;
+      	transition-timing-function:linear;
+      	*/
+      	z-index:2
+      }
+      .video .video-progress .video-progress-bar {	position: absolute;
+      	width: 10px;
+      	height: 10px;
+      	background-color: green;
+      }
+
+      .video .spinner-icon {
+      	position:absolute;
+      	display: inline-block;
+      	width: 100px;
+      	height: 100px;
+      	top: 100px;
+      	left: 200px;
+      	border-radius: 50%;
+      	animation: loading-bar-spinner 1000ms ease-out infinite;
+      	box-sizing: border-box;
+      	background: linear-gradient(to right, rgb(255, 255, 255)0%, rgb(0, 55, 255) 100%);
+      }
+      .video .spinner-icon:before {
+      	content: "";
+      	position: absolute;
+      	width: 70px;
+      	height: 70px;
+      	border-radius: 100%;
+      	animation: loading-bar-spinner-r 800ms linear infinite left:20;
+      	top: 15px;
+      	left: 20px;
+      	background: url(http://m.denple.osstem.com/dsp/assets/denple/images/dp_logo.png) no-repeat center;
+      	box-sizing: border-box;
+      	background-size: contain;
+      }
+      @keyframes loading-bar-spinner {
+      	0% {
+      		transform: rotate3d(0,0,0,0)
+      	}
+
+      	100% {
+      		transform: rotate3d(1,1,1,360deg)
+      	}
+      }
+
+      .touch-drop{position:absolute;}
+    </style>
+  </head>
+  <body>
+    <div class="video" id="video">
+      <video
+        class="video-display"
+        src="http://dz8oqzgwcs3uf.cloudfront.net/BRAND/BRAND001/BRAND001001/21/o_1bvh3bqbv64pb331ngdc54rbja.mp4"
+      ></video>
+      <div class="video-control">
+        <div class="video-progress">
+          <div class="video-progress-status">
+            <div class="video-progress-bar touch-drop"></div>
+          </div>
+          <div class="video-progress-buffer-status"></div>
+        </div>
+        <button class="play">play</button>
+        <button class="pause">pause</button>
+        <button class="mute">mute</button>
+        <button class="unmute">unmute</button>
+
+        <div class="time"></div>
+        <div class="time-end"></div>
+      </div>
+    </div>
+
+    <a download="out.json" href="blob:null/f274df98-d839-406a-8ceb-4c102e5cd122"
+      >aaa</a
+    >
+    <script>
+      var dragDrop = function (obj) {
+        this.$el = $(obj);
+        this.$target;
+        this.InitEventList = ["mousedown", "mousemove", "mouseup"];
+        this.eventList = {};
+        this.InitEventList.forEach(
+          function (v, i) {
+            this.eventList["on" + v] = [];
+          }.bind(this)
+        );
+        this.eventAddrPoint = {};
+
+        this.isDragDrop = false;
+
+        this.targetDefaultTop;
+        this.targetDefaultLeft;
+        this.targetOffsetTop;
+        this.targetOffsetLeft;
+        this.x = 0;
+        this.y = 0;
+
+        this.draggableClass = "touch-drop";
+        this.movingType = ""; //horizontal,vertical,free,
+
+        this.init();
+      };
+      dragDrop.prototype.init = function () {
+        this._attachEvent();
+      };
+      dragDrop.prototype._attachEvent = function () {
+        var aEvt = this.InitEventList,
+          that = this,
+          target = that.$el[0],
+          returnFn;
+
+        aEvt.forEach(function (v, i) {
+          var _tmp = {};
+
+          target.addEventListener(
+            v,
+            (returnFn = function (e) {
+              that["on" + v](e);
+            })
+          );
+
+          _tmp[v] = returnFn;
+          that.eventAddrPoint = $.extend(that.eventAddrPoint, _tmp);
+        });
+      };
+      dragDrop.prototype._detachEvent = function () {
+        var target = this.$el[0],
+          aEvt = this.InitEventList;
+
+        aEvt.forEach(
+          function (v, i) {
+            this.$el[0].removeEventListener(v, this.eventAddrPoint[v]);
+          }.bind(this)
+        );
+      };
+      dragDrop.prototype._moving = function (v) {
+        (this.movingType == "horizontal" || this.movingType == "") &&
+          this.$target.css({ left: v.left });
+        (this.movingType == "vertical" || this.movingType == "") &&
+          this.$target.css({ top: v.top });
+      };
+      dragDrop.prototype.onmousedown = function (e) {
+        if ($(e.target).hasClass(this.draggableClass)) {
+          this.$target = $(e.target);
+          this.isDragDrop = true;
+        }
+
+        if (this.isDragDrop) {
+          this.targetDefaultTop = e.pageY;
+          this.targetDefaultLeft = e.pageX;
+          this.targetOffsetTop = parseInt(this.$target.css("top"));
+          this.targetOffsetLeft = parseInt(this.$target.css("left"));
+        }
+      };
+      dragDrop.prototype.onmousemove = function (e) {
+        var x, y;
+
+        if (this.isDragDrop) {
+          e.preventDefault();
+
+          (this.x = x =
+            e.pageX - this.targetDefaultLeft + this.targetOffsetLeft),
+            (this.y = y =
+              e.pageY - this.targetDefaultTop + this.targetOffsetTop);
+
+          this._moving({ left: x, top: y });
+        }
+      };
+      dragDrop.prototype.onmouseup = function (e) {
+        this.$target = null;
+        this.isDragDrop = false;
+      };
+      dragDrop.prototype.on = function (eventType, callBack) {
+        var _fnStr = "on" + eventType,
+          _fn = this[_fnStr],
+          _callBack = function () {
+            var _len = 0;
+
+            return function () {
+              if (typeof this.eventList[_fnStr][_len] != "function") {
+                _len = 0;
+                return true;
+              } else if (this.eventList[_fnStr][_len](arguments[0])) {
+                _len++;
+
+                if (_len >= this.eventList[_fnStr].length) {
+                  _len = 0;
+                  return true;
+                } else {
+                  return _callBack(arguments[0]);
+                }
+              } else {
+                _len = 0;
+                return false;
+              }
+            }.bind(this);
+          }.bind(this)();
+
+        this.eventList[_fnStr].push(callBack.bind(this));
+
+        if (!this.hasOwnProperty(_fnStr)) {
+          this[_fnStr] = function () {
+            if (_callBack(arguments[0])) {
+              _fn.apply(this, arguments);
+            }
+          };
+        }
+      };
+      dragDrop.prototype.off = function (eventType) {
+        var _fnStr = "on" + eventType,
+          _fn = this[_fnStr];
+
+        if (this.hasOwnProperty(_fnStr)) {
+          this.eventList[_fnStr].pop();
+        }
+      };
+
+      var loopCount = function (_opt, _cb) {
+        var opt = {
+          node: document,
+          tot: 10,
+          limit: 0,
+          initCnt: 0,
+          time: 5000,
+          type: "loop", // loop,loop-back,half-loop-back
+        };
+        $.extend(opt, _opt);
+
+        this.$el = $(opt.node);
+        this.initCnt = opt.initCnt;
+        this.type = opt.type;
+        this.tot = opt.tot;
+        this.retVal = 0;
+        this.limit = opt.limit;
+        this.limitLoop = 0;
+        this.intervalTime = opt.time;
+        this.half = this.tot / 2;
+        this.scope = "loopcount";
+
+        this.cb = typeof _cb == "function" ? _cb : function () {};
+      };
+      loopCount.prototype.init = function () {
+        this.retVal = this.initCnt;
+        this.cb();
+        this.initCnt++;
+        this.startMotion();
+        this._bindEvent();
+      };
+      loopCount.prototype.destroy = function () {
+        this.stopMotion();
+        this.$el.unbind("loopCbFn." + this.scope);
+
+        return true;
+      };
+      loopCount.prototype._bindEvent = function () {
+        this.$el
+          .unbind("loopCbFn." + this.scope)
+          .bind("loopCbFn." + this.scope, this.cb);
+      };
+      loopCount.prototype.setPropertyByType = function (cnt) {
+        this.type == "loop-back" &&
+          function () {
+            this.type = "half-loop-back";
+            this.half = this.half * 2;
+            this.tot = this.tot * 2;
+            this.setPropertyByType(cnt);
+          }.bind(this)();
+
+        this.type == "half-loop-back" &&
+          function () {
+            if (cnt >= this.half) {
+              this.retVal = this.tot - cnt;
+            } else {
+              this.retVal = cnt;
+            }
+          }.bind(this)();
+
+        this.type == "loop" && (this.retVal = cnt);
+      };
+      loopCount.prototype.startMotion = function () {
+        var limitLoop = 0;
+        cnt = this.initCnt;
+
+        clearInterval(this.intVal);
+
+        this.intVal = setInterval(
+          function () {
+            this.setPropertyByType(cnt);
+
+            cnt++;
+
+            if (cnt >= this.tot) {
+              cnt = 1;
+              this.limitLoop++;
+
+              if (this.limitLoop >= this.limit) {
+                this.stopMotion();
+                !this.limit && this.startMotion();
+              } else {
+                this.stopMotion();
+                this.startMotion();
+              }
+            }
+
+            this.cb();
+          }.bind(this),
+          this.intervalTime
+        );
+      };
+      loopCount.prototype.stopMotion = function () {
+        this.initCnt = 0;
+        clearInterval(this.intVal);
+      };
+      loopCount.prototype.pauseMotion = function () {
+        this.initCnt = this.retVal + 1 == this.tot ? 0 : this.retVal + 1;
+        clearInterval(this.intVal);
+      };
+
+      var hPlayer = function (node) {
+        this.$el = $(node);
+        this.$display = this.$el.find(".video-display");
+        this.$control = this.$el.find(".video-control");
+        this.scope = "hplay";
+
+        this.displayObj = this.$display[0];
+        this.loopCountObj = {};
+        this.dragDropObj = {};
+
+        this.displayObj.controls = false;
+
+        this.init();
+      };
+
+      hPlayer.prototype.init = function () {
+        var _$loadingImg = $("<div class='spinner-icon'>"),
+          _chkVideoReady = new loopCount(
+            {
+              node: document,
+              tot: 10,
+              limit: 0,
+              initCnt: 0,
+              time: 100,
+              type: "loop", // loop,loop-back,half-loop-back
+            },
+            function () {
+              this.displayObj.seekable.length &&
+                this.displayObj.seekable.end(0) &&
+                this.makeLoopObj(this.displayObj);
+              this.displayObj.seekable.length &&
+                this.displayObj.seekable.end(0) &&
+                _chkVideoReady.destroy() &&
+                _$loadingImg.remove();
+            }.bind(this)
+          );
+        this.$el.append(_$loadingImg);
+        _chkVideoReady.init();
+
+        this.makeDragDropObj();
+        this._bindEvent();
+      };
+      hPlayer.prototype.makeLoopObj = function (videoNode) {
+        var __opt = {
+            node: videoNode,
+            time: 200,
+            limitLoop: 2,
+            tot: videoNode.seekable.end(0),
+          },
+          retDate = function (v) {
+            var k = (v - 32400) * 1000;
+            var d = new Date(k);
+
+            return (
+              (d.getHours() < 10 ? "0" + d.getHours() : d.getHours()) +
+              ":" +
+              (d.getMinutes() < 10 ? "0" + d.getMinutes() : d.getMinutes()) +
+              ":" +
+              (d.getSeconds() < 10 ? "0" + d.getSeconds() : d.getSeconds())
+            );
+          },
+          that = this;
+
+        this.loopCountObj = new loopCount(__opt, function (e) {
+          var progressWidthSize =
+              that.$control.find(".video-progress").width() -
+              that.$control.find(".video-progress-bar").width(),
+            _width,
+            _length;
+
+          arguments[1] &&
+            arguments[1].pos &&
+            (function (pos) {
+              that.dragDropObj.x = pos;
+              videoNode.currentTime =
+                (pos * that.displayObj.seekable.end(0)) / progressWidthSize;
+            })(arguments[1].pos);
+
+          _width =
+            (videoNode.currentTime / that.loopCountObj.tot) * progressWidthSize;
+          _bufferedLength = videoNode.buffered.length
+            ? videoNode.buffered.length - 1
+            : 0;
+
+          that.$control
+            .find(".video-progress-status")
+            .css("width", _width + "px");
+          that.$control.find(".video-progress-bar").css("left", _width + "px");
+          that.$control
+            .find(".video-progress-buffer-status")
+            .css(
+              "width",
+              (videoNode.buffered.end(_bufferedLength) /
+                that.loopCountObj.tot) *
+                100 +
+                "%"
+            );
+          that.$control
+            .find(".time")
+            .text(retDate(that.displayObj.currentTime));
+          that.$control
+            .find(".time-end")
+            .text(retDate(that.displayObj.seekable.end(0)));
+
+          if (that.displayObj.currentTime == this.tot) this.stopMotion();
+
+          //console.log(that.displayObj.currentTime)
+          //console.log(that.displayObj.buffered.end(0));
+        });
+
+        this.$control.find(".play").trigger("click"); // 자동실행
+      };
+      hPlayer.prototype.makeDragDropObj = function (videoNode) {
+        var that = this;
+
+        this.dragDropObj = new dragDrop(this.$el[0]);
+        this.dragDropObj.movingType = "horizontal";
+
+        this.dragDropObj.on(
+          "mousedown",
+          function (e) {
+            if (
+              $(e.target).hasClass("touch-drop") ||
+              $(e.target).hasClass("video-progress") ||
+              $(e.target).hasClass("video-progress-status") ||
+              $(e.target).hasClass("video-progress-buffer-status")
+            ) {
+              this.$target = this.$el.find(".touch-drop");
+
+              this.isDragDrop = true;
+
+              ($(e.target).hasClass("video-progress") ||
+                $(e.target).hasClass("video-progress-status") ||
+                $(e.target).hasClass("video-progress-buffer-status")) &&
+                function () {
+                  this.$target.css({
+                    left: e.layerX - this.$target.width() / 2,
+                  });
+                  this.targetOffsetTop = parseInt(this.$target.css("top"));
+                  this.targetOffsetLeft = parseInt(this.$target.css("left"));
+
+                  that.loopCountObj.$el.trigger("loopCbFn", { pos: e.layerX });
+                }.bind(this)();
+
+              return true;
+            } else {
+              return false;
+            }
+          }.bind(this.dragDropObj)
+        );
+
+        this.dragDropObj.on(
+          "mousemove",
+          function (e) {
+            if (this.isDragDrop) {
+              that.loopCountObj.$el.trigger("loopCbFn", { pos: this.x });
+              return true;
+            } else {
+              return false;
+            }
+          }.bind(this.dragDropObj)
+        );
+      };
+      hPlayer.prototype._bindEvent = function () {
+        this.$el.unbind("click." + this.scope).bind(
+          "click." + this.scope,
+          function (e) {
+            var that = this;
+            $tar = $(e.target);
+
+            $.isEmptyObject(that.loopCountObj) &&
+              that.makeLoopObj(this.displayObj);
+
+            $tar.hasClass("play") &&
+              (function () {
+                that.displayObj.play();
+                that.loopCountObj.init();
+              })();
+            $tar.hasClass("pause") &&
+              (function () {
+                that.displayObj.pause();
+                that.loopCountObj.pauseMotion();
+                console.log("pause");
+              })();
+            $tar.hasClass("mute") && (that.displayObj.muted = true);
+            $tar.hasClass("unmute") && (that.displayObj.muted = false);
+          }.bind(this)
+        );
+      };
+
+      var k = new hPlayer(document.getElementById("video"));
+    </script>
+  </body>
+</html>

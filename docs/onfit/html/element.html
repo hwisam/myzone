@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>OnFit :: select</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no"
+    />
+    <link rel="stylesheet" type="" href="../css/reset.css" />
+    <link rel="stylesheet" type="" href="../css/style.css" />
+    <style>
+      body {
+        height: 1000px;
+      }
+
+      .box a {
+        font-size: 13px;
+        text-decoration: underline;
+      }
+      pre {
+        margin: 10px;
+        padding: 5px;
+        overflow: auto;
+        box-shadow: 2px 2px 4px 0px #3c3c3c;
+        border-radius: 5px;
+        font-size: 13px;
+      }
+
+      /* default swiper  변경불가*/
+      .hwi-wrap {
+        position: relative;
+        height: 100%;
+        overflow: hidden;
+      }
+      .hwi-wrap:hover {
+        cursor: url("https://maps.gstatic.com/mapfiles/openhand_8_8.cur") 8 8,
+          default;
+      }
+      .hwi-wrap.cursor-hand-active {
+        cursor: url("https://maps.gstatic.com/mapfiles/closedhand_8_8.cur") 8 8,
+          default;
+      }
+      .hwi-slide {
+        display: none;
+        overflow: hidden;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        transition-timing-function: ease-out;
+      }
+      .hwi-slide.active {
+        display: block;
+      }
+      /* default swiper  변경불가*/
+
+      /* customer-select */
+      .customer-select-group {
+        display: block;
+        width: 100%;
+        font-size: 0;
+        background: #ebf2f8;
+      }
+      .customer-select-group .box {
+        display: inline-block;
+        width: 33.33333%;
+        height: 250px;
+        overflow: hidden;
+        position: relative;
+      }
+      .customer-select-group .mask {
+        position: absolute;
+        width: 100%;
+        top: 0;
+        left: 0;
+        height: 100%;
+        margin: 0 auto;
+        width: 100%;
+        z-index: 3;
+        background-image: linear-gradient(
+            to bottom,
+            rgba(235, 242, 248, 1),
+            rgba(235, 242, 248, 0)
+          ),
+          linear-gradient(
+            to top,
+            rgba(235, 242, 248, 1),
+            rgba(235, 242, 248, 0)
+          );
+        background-position: top, bottom;
+        background-size: 100% 120px;
+        background-repeat: no-repeat;
+      }
+      .customer-select-group .choice {
+        position: absolute;
+        top: 100px;
+        height: 50px;
+        width: 100%;
+        background: #afd7ff;
+      }
+      .customer-select-group .hwi-wrap {
+        width: 100%;
+        height: 250px;
+      }
+      .customer-select-group .hwi-wrap .hwi-slide {
+        line-height: 50px;
+        text-align: center;
+        font-size: 1.6rem;
+        color: #4a4a4a;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header id="headerWrap" class="fixed">
+        <div class="header">
+          <h1 class="headerTitle">SELECT</h1>
+          <button type="button" class="btnR btnClose">닫기</button>
+        </div>
+      </header>
+
+      <div class="contentWrap">
+        <div class="customer-select-group">
+          <div class="box">
+            <div id="a1">
+              <div class="mask"></div>
+              <div class="choice"></div>
+              <div class="hwi-wrap">
+                <div class="hwi-slide">오전</div>
+                <div class="hwi-slide">오후</div>
+              </div>
+            </div>
+          </div>
+          <div class="box">
+            <div id="a2">
+              <div class="mask"></div>
+              <div class="choice"></div>
+              <div class="hwi-wrap">
+                <div class="hwi-slide">1시</div>
+                <div class="hwi-slide">2시</div>
+                <div class="hwi-slide">3시</div>
+                <div class="hwi-slide">4시</div>
+                <div class="hwi-slide">5시</div>
+                <div class="hwi-slide">6시</div>
+                <div class="hwi-slide">7시</div>
+                <div class="hwi-slide">8시</div>
+                <div class="hwi-slide">9시</div>
+                <div class="hwi-slide">10시</div>
+                <div class="hwi-slide">11시</div>
+                <div class="hwi-slide">12시</div>
+              </div>
+            </div>
+          </div>
+          <div class="box">
+            <div id="a3">
+              <div class="mask"></div>
+              <div class="choice"></div>
+              <div class="hwi-wrap">
+                <div class="hwi-slide">1시</div>
+                <div class="hwi-slide">2시</div>
+                <div class="hwi-slide">3시</div>
+                <div class="hwi-slide">4시</div>
+                <div class="hwi-slide">5시</div>
+                <div class="hwi-slide">6시</div>
+                <div class="hwi-slide">7시</div>
+                <div class="hwi-slide">8시</div>
+                <div class="hwi-slide">9시</div>
+                <div class="hwi-slide">10시</div>
+                <div class="hwi-slide">11시</div>
+                <div class="hwi-slide">12시</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--
+			<button class="btnLineBlue" onclick="selGet();">불러오기</button>
+			<button class="btnLineRed" onclick="selSet('3 회차');">셋팅(3 회차)</button>
+			<button class="btnLineGray" onclick="selReset();">리셋</button>
+			-->
+      </div>
+    </div>
+
+    <script type="text/javascript" src="../js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="../js/hwi-swiper.js"></script>
+    <script>
+      var a = new hwiSwiper(document.getElementById("a1"), {
+        transitionDuration: "350ms",
+        screenForm: "list",
+        direction: "vertical",
+        defaultY: 50,
+        boundGuide: 100,
+      });
+      var b = new hwiSwiper(document.getElementById("a2"), {
+        transitionDuration: "350ms",
+        screenForm: "list",
+        direction: "vertical",
+        defaultY: 50,
+        boundGuide: 100,
+      });
+      var c = new hwiSwiper(document.getElementById("a3"), {
+        transitionDuration: "350ms",
+        screenForm: "list",
+        direction: "vertical",
+        defaultY: 50,
+        boundGuide: 100,
+      });
+
+      var selGet = function () {
+        var v = a.getVal();
+
+        alert(v);
+      };
+
+      var selSet = function (v) {
+        a.setVal(v);
+      };
+
+      var selReset = function (v) {
+        a.reset();
+      };
+    </script>
+  </body>
+</html>

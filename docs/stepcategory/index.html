@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+
+<html class="no-js" lang="">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <script>
+      Function.prototype.bind = function (scope) {
+        var _function = this;
+
+        return function () {
+          return _function.apply(scope, arguments);
+        };
+      };
+      Array.prototype.indexOf = function (obj) {
+        for (var i = 0; i < this.length; i++) {
+          if (this[i] == obj) {
+            return i;
+          }
+        }
+        return -1;
+      };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dot/1.1.2/doT.min.js"></script>
+    <script>
+      (function ($, window) {
+        $.fn.tmpl = function (data) {
+          var tmplNm =
+              this[0].tagName == "SCRIPT"
+                ? $(this).data("template-dummy")
+                : $(this).data("template"),
+            tmpl,
+            arg = arguments[1],
+            arg2 = arguments[2],
+            bindHtml,
+            tmplThis = "",
+            defData = {
+              resCode: 0,
+              resMsg: "",
+              resData: {
+                eData: {},
+                aData: [],
+              },
+            };
+
+          // 템플릿안의 this 함수를 스토리지에 저장 ( 화면 복원시 필요 )
+          if (
+            arg &&
+            !$.isEmptyObject(arg) &&
+            !$.isEmptyObject(boriUI.VAR.sessStorage)
+          ) {
+            for (a in arg) {
+              tmplThis += "obj." + a + " = " + arg[a].toString() + ";^";
+            }
+            tmplThis = tmplThis
+              .replace(/\t/gi, "")
+              .replace(/\/\/.*\n/gi, "")
+              .replace(/\n/gi, "")
+              .replace(/\^$/gi, "");
+
+            boriUI.VAR.sessStorage.set("tmplInThis_" + tmplNm, tmplThis);
+          }
+
+          // template init check
+          if (this.length != 1) {
+            alert("템플릿은 단일노드에 대해서만 가능합니다.");
+            return;
+          }
+          if (!tmplNm) {
+            alert("사용할 템플릿을 선택해주세요.");
+            return;
+          }
+          $.extend(defData, data);
+
+          // 컴파일작업
+          if (!(boriUI.TMPL[tmplNm] && boriUI.TMPL[tmplNm].template)) {
+            var def = {},
+              $template =
+                this[0].tagName == "SCRIPT" ? $(this[0].innerHTML) : $(this);
+
+            boriUI.TMPL[tmplNm] = {};
+
+            $template.find("[data-define]").each(function () {
+              var define = $(this).data("define"),
+                $wrap = $("<div class='wrap-define'>"),
+                html = $(this)[0].outerHTML,
+                tmp = {};
+
+              $(this).wrap($wrap);
+              $(this)
+                .closest(".wrap-define")
+                .append("{{#def." + define + "}}");
+              $(this).unwrap($wrap).remove();
+
+              tmp[define] = html;
+              $.extend(def, tmp, true);
+
+              boriUI.TMPL[tmplNm][$(this).data("define")] = doT
+                .template(this.innerHTML)
+                .bind(arg);
+            });
+            boriUI.TMPL[tmplNm].template = doT
+              .template(this[0].innerHTML, undefined, def)
+              .bind(arg);
+          }
+
+          // 복원시 컴파일작업만 필요할때가 있음.. 그럴경우 데이타바인드 작업이 필요없음 (데이타도 없이 넘어옴)
+          if (!$.isEmptyObject(data)) {
+            if (this[0].tagName == "SCRIPT") {
+              if ($("#" + arg2).length) {
+                $("#" + arg2).prepend(boriUI.TMPL[tmplNm].template(defData));
+              } else {
+                console.log(
+                  "[#" +
+                    arg2 +
+                    "] 템플릿 바인드된 결과를 뿌려줄 위치를 찾을수 없습니다."
+                );
+                return;
+              }
+            } else {
+              $(this).empty().prepend(boriUI.TMPL[tmplNm].template(defData));
+              $(this).removeClass("invisible");
+            }
+
+            //this.rData = defData;
+            if (typeof boriUI.FN[tmplNm] != "function") {
+              alert("callback함수를 선언해주세요.");
+              return;
+            } else {
+              if (this[0].tagName == "SCRIPT") {
+                // 모듈타임의 경우 템플릿바인드 된 결과를 화면에 위치시켜줘야 할 부분이 필요했음..
+                // 임시영역이여서 바인드 결과값이 자리를 잡고 난 후 삭제해줌
+                return boriUI.FN[tmplNm].bind(
+                  $("#" + arg2)
+                    .children()
+                    .attr("id", arg2)
+                    .unwrap()
+                )(defData);
+                //$("[data-template='"+tmplNm+"']")
+              } else {
+                return boriUI.FN[tmplNm].bind(this)(defData);
+              }
+            }
+          }
+        };
+
+        $.fn._eventBind = function (handler, eventType, eventHead) {
+          var el = this,
+            eventHandlerObj = {},
+            eventType = eventType || "click",
+            eventHead = eventHead || "tmpl-event-";
+
+          eventHandlerObj[eventType] = function (e) {
+            var _reg = "/\\b(" + eventHead + ")\\w+/g",
+              eventTarget = $(e.currentTarget)
+                .attr("class")
+                .match(eval(_reg))[0],
+              handlerNm = eventTarget.replace(eventHead, "");
+
+            if (typeof handler[handlerNm] == "function") {
+              handler[handlerNm].bind(e.currentTarget)(e);
+            } else {
+              alert("이벤트 핸들러를 찾을 수 없습니다.");
+            }
+          };
+
+          $(el)
+            .off(eventType)
+            .on(eventHandlerObj, "[class*='" + eventHead + "']");
+
+          return this;
+        };
+
+        (function (_append, _appendTo, _prepend, _prependTo, _val) {
+          /*
+			append,appendTo... 오버라이딩
+			- 템플릿의 define 기능을 주기위해서....
+		*/
+          $.fn.append = function () {
+            var _define = $(this).data("define"),
+              _tmpl = _define
+                ? $(this).closest("[data-template]").data("template")
+                : "";
+
+            if (arguments[0] && arguments[0].resCode == 1 && _tmpl && _define) {
+              arguments[0] = boriUI.TMPL[_tmpl][_define](arguments[0]);
+            }
+
+            return _append.apply(this, arguments);
+          };
+          $.fn.appendTo = function () {
+            var _define = $(arguments[0]).data("define"),
+              _tmpl = _define
+                ? $(arguments[0]).closest("[data-template]").data("template")
+                : "",
+              tmp;
+
+            if (this[0] && this[0].resCode == 1 && _tmpl && _define) {
+              tmp = $(boriUI.TMPL[_tmpl][_define](this[0]));
+              return _appendTo.apply(tmp, arguments);
+            } else {
+              return _appendTo.apply(this, arguments);
+            }
+          };
+          $.fn.prepend = function () {
+            var _define = $(this).data("define"),
+              _tmpl = _define
+                ? $(this).closest("[data-template]").data("template")
+                : "";
+
+            if (arguments[0] && arguments[0].resCode == 1 && _tmpl && _define) {
+              arguments[0] = boriUI.TMPL[_tmpl][_define](arguments[0]);
+            }
+
+            return _prepend.apply(this, arguments);
+          };
+          $.fn.prependTo = function () {
+            var _define = $(arguments[0]).data("define"),
+              _tmpl = _define
+                ? $(arguments[0]).closest("[data-template]").data("template")
+                : "",
+              tmp;
+
+            if (this[0] && this[0].resCode == 1 && _tmpl && _define) {
+              tmp = $(boriUI.TMPL[_tmpl][_define](this[0]));
+              return _prependTo.apply(tmp, arguments);
+            } else {
+              return _prependTo.apply(this, arguments);
+            }
+          };
+          /*
+			jquery의 val기능을 오버라이딩
+			- 커스텀한 input의 기능(FN_select,FN_check,FN_radio.... )을 위해서 만들어짐.
+		*/
+          $.fn.val = function (v) {
+            if (arguments.length > 0) {
+              if (this.hasClass("FN_select")) {
+                var key;
+                this.data("display").value.forEach(
+                  function (_v, _i) {
+                    if (_v == v) {
+                      key = _i;
+                      this.attr("data-value", v)
+                        .data("value", v)
+                        .attr("value", this.data("display").text[_i]);
+                    }
+                  }.bind(this)
+                );
+
+                if (key != undefined) {
+                  return (this[0].value = this.data("display").text[key]);
+                } else {
+                  this.attr("data-value", "")
+                    .data("value", "")
+                    .attr("value", "");
+                  arguments[0] = "";
+                }
+              } else if (this.hasClass("FN_check")) {
+              } else if (this.hasClass("FN_radio")) {
+              }
+            } else {
+              if (this.hasClass("FN_select")) {
+                return this.data("value");
+              } else if (this.hasClass("FN_check")) {
+              } else if (this.hasClass("FN_radio")) {
+              }
+            }
+            return _val.apply(this, arguments);
+          };
+        })($.fn.append, $.fn.appendTo, $.fn.prepend, $.fn.prependTo, $.fn.val);
+
+        window.boriUI = window.boriUI || {
+          VAR: {
+            resizeArrayFn: [], // 화면이 리사이즈 될때 실행할 함수모음
+            hashchangeArrayFn: [], // hash가 변경될때 실행할 함수모음
+            sessStorage: {}, // hash가 변경될때 실행할 함수모음
+            scrollSwitch: [], // touchmove 이벤트를 제어하는 곳
+            contextmenuSwitch: [], // contextmenu 이벤트를 제어하는 곳
+            wishControlInstance: null, // 상품위시 인스턴트 전역변수(boriUI.CLASS.myBrandControl)
+            myBrandControlInstance: null, // 마이브랜드 인스턴트 전역변수(boriUI.CLASS.wishControl)
+            isRedirectErrorPage: true, // 통신에러발생시 에러페이지로 리다이렉트 시킴(true)
+            loadingObj: null, // 로딩바(싱글) 인스턴스 - 강제로딩바 생성을 위해서 만듬
+          },
+          MSG: {
+            ajaxError: "데이타 통신에러",
+            ajaxErrorOption: "옵션데이타를 가져오지 못했습니다.",
+            ajaxErrorResCode: "결과코드 에러",
+            urlCoped: "url 주소가 복사되었습니다.",
+          },
+          TMPL: {},
+          DEVSET: {
+            isApp: false,
+          },
+          CLASS: {},
+          FN: {
+            ajax: function (opt) {
+              //var _url = "http://" + location.hostname;
+              //var _url = "http://mdev.boribori.co.kr";
+              //var _url = "http://mux.halfclub.com";
+
+              var _opt = {};
+              if (opt.forUpload == true) {
+                _opt = {
+                  //url: _url + opt.file,
+                  url: opt.file,
+                  data: opt.data,
+                  callback: opt.callback,
+                  async: opt.async != undefined ? opt.async : true,
+                  type: opt.type != undefined ? opt.type : "get",
+                  dataType: opt.dataType != undefined ? opt.dataType : "json",
+                  contentType:
+                    opt.contentType != undefined ? opt.contentType : true,
+                  processData:
+                    opt.processData != undefined ? opt.processData : true,
+                  isHiddenLoadingBar: opt.isHiddenLoadingBar
+                    ? opt.isHiddenLoadingBar
+                    : false,
+                  isNotBindClickLoading: opt.isNotBindClickLoading
+                    ? opt.isNotBindClickLoading
+                    : false,
+                  //retryurldata: opt.data,
+                  //timeout: 3000
+                  timeout: opt.timeout != undefined ? opt.timeout : 30000,
+                };
+              } else {
+                _opt = {
+                  //url: _url + opt.file,
+                  url: opt.file,
+                  data: opt.data,
+                  callback: opt.callback,
+                  async: opt.async != undefined ? opt.async : true,
+                  type: opt.type != undefined ? opt.type : "get",
+                  dataType: opt.dataType != undefined ? opt.dataType : "json",
+                  isHiddenLoadingBar: opt.isHiddenLoadingBar
+                    ? opt.isHiddenLoadingBar
+                    : false,
+                  isNotBindClickLoading: opt.isNotBindClickLoading
+                    ? opt.isNotBindClickLoading
+                    : false,
+                  //retryurldata: opt.data,
+                  //timeout: 3000
+                  timeout: opt.timeout != undefined ? opt.timeout : 30000,
+                };
+              }
+              // opt.retryurl값이 있을경우 리트라이함.
+              if (opt.retryurl) {
+                opt.file = opt.retryurl;
+                opt.retryurl = null;
+                $.extend(_opt, { opt: opt });
+              }
+
+              $.ajax(_opt).done(
+                function (_rData) {
+                  // 수정
+                  var rData = _rData.d;
+
+                  if (rData && rData.resCode && rData.resCode == 1) {
+                    opt.callback.bind(this)(rData);
+                  }
+                }.bind(this)
+              );
+            },
+          },
+        };
+      })(jQuery, window);
+    </script>
+    <style>
+      .selectbox-layer {
+        box-sizing: border-box;
+        border: 1px solid blue;
+      }
+      .selectbox-layer-display {
+        box-sizing: border-box;
+        background-color: #c9c9ff;
+      }
+
+      .selectbox-layer.active {
+        border: 2px solid red;
+      }
+      .selectbox-layer.active .selectbox-layer-option {
+        display: block;
+      }
+      .selectbox-layer-option {
+        display: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      body > div {
+        border: 1px solid red;
+        margin-top: 50px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="" id="productOptCtr" data-template="productOptCtr">
+      <div class="">
+        <div data-define="productOpt" class="product-opt">
+          <div class="selectbox-layer">
+            <div class="selectbox-layer-display tmpl-event-selectopt">
+              <span class="text-muted">옵션을 선택하세요.</span>
+            </div>
+            <ul class="selectbox-layer-option">
+              {{~ it.resData.aData.list :p2:i2 }}
+              <li class="">
+                <div class="checkbox">
+                  <input
+                    type="checkbox"
+                    id="product-option-{{=it.resData.eData.unique}}-{{=it.resData.eData.step}}-{{=i2}}"
+                    name="product-option"
+                    value="{{=p2.OptionNm}}"
+                    data-value="{{=p2.PrdSize}}(-){{=p2.PrstCd}}(-){{=p2.ImsiInvQty}}(-){{=p2.OptNm}}(-)10000(-){{=p2.OptPri}}"
+                    data-opt-cd="{{=p2.PrdSize}}"
+                    class="product-option tmpl-event-selectoptitem"
+                  />
+                  <label
+                    for="product-option-{{=it.resData.eData.unique}}-{{=it.resData.eData.step}}-{{=i2}}"
+                    class="checkbox-display"
+                  ></label>
+                  <label
+                    for="product-option-{{=it.resData.eData.unique}}-{{=it.resData.eData.step}}-{{=i2}}"
+                    class="checkbox-label"
+                    >{{=p2.OptionNm}}</label
+                  >
+                </div>
+              </li>
+              {{~}}
+            </ul>
+          </div>
+        </div>
+
+        <div data-define="productOptList" class="option-select-list">
+          {{~ it.resData.aData.optlist :p:i }}
+          <div
+            class="cell-selected"
+            data-name="{{=p.name}}"
+            data-opt-cd="{{=p.optsize}}"
+            data-prod-cd="{{=p.optcd}}"
+            data-inv-qty="{{= p.invQty}}"
+            data-price="{{= p.price}}"
+            data-optpri="{{=p.optPri}}"
+          >
+            <span class="text-muted">{{= p.name}}</span>
+            <div>
+              <div class="">
+                <button class="tmpl-event-minus" data-qty="minus">감소</button>
+                <div class="">
+                  <div class="">
+                    <input type="number" name="prd-qty" class="" value="1" />
+                  </div>
+                </div>
+                <button class="tmpl-event-plus" data-qty="plus">증가</button>
+              </div>
+              <div class="">
+                <span>{{= p.price}}원</span>
+                <button class="tmpl-event-delete">삭제</button>
+              </div>
+            </div>
+          </div>
+          {{~}}
+        </div>
+
+        <div class="clearfix">
+          <strong class="text-huge">판매가</strong>
+          <strong
+            id="total-price-text"
+            class="text-huge text-primary pull-right"
+            >0원</strong
+          >
+          <input type="hidden" id="total-price" value="0" />
+        </div>
+      </div>
+      <div class="sticky-layer display-table bg-clean">
+        <div class="col-xs-2 display-table--cell c1">
+          <button
+            class="button tmpl-event-wish button-large button-default button-block clear-padding"
+            data-call="modal"
+            data-route="#modal-floating"
+            onclick="javascript:modal.call(this); return false;"
+          >
+            <i class="icon-heart-thin-empty text-giant"></i>
+          </button>
+        </div>
+        <div class="col-xs-5 display-table--cell clear-padding c2">
+          <span
+            class="button tmpl-event-basket button-dimmed button-large button-block"
+            data-call="modal"
+            data-route="#modal-floating-cart"
+            onclick="javascript:modal.call(this); return false;"
+          >
+            <span>장바구니</span>
+          </span>
+        </div>
+        <div class="col-xs-5 display-table--cell c3">
+          <a
+            href="#"
+            class="button tmpl-event-order button-primary button-large button-block"
+          >
+            <span>바로구매</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="" id="productOptCtr1" data-template="productOptCtr">
+      <div class="">
+        <div data-define="productOpt" class="product-opt">
+          <div class="selectbox-layer">
+            <div class="selectbox-layer-display tmpl-event-selectopt">
+              <span class="text-muted">옵션을 선택하세요.</span>
+            </div>
+            <ul class="selectbox-layer-option">
+              {{~ it.resData.aData.list :p2:i2 }}
+              <li class="">
+                <div class="checkbox">
+                  <input
+                    type="checkbox"
+                    id="{{=it.resData.eData.unique}}-product-option-{{=it.resData.eData.step}}-{{=i2}}"
+                    name="product-option"
+                    value="{{=p2.OptionNm}}"
+                    data-value="{{=p2.PrdSize}}(-){{=p2.PrstCd}}(-){{=p2.ImsiInvQty}}(-){{=p2.OptNm}}(-)10000(-){{=p2.OptPri}}"
+                    class="product-option tmpl-event-selectoptitem"
+                  />
+                  <label
+                    for="{{=it.resData.eData.unique}}-product-option-{{=it.resData.eData.step}}-{{=i2}}"
+                    class="checkbox-display"
+                  ></label>
+                  <label
+                    for="{{=it.resData.eData.unique}}-product-option-{{=it.resData.eData.step}}-{{=i2}}"
+                    class="checkbox-label"
+                    >{{=p2.OptionNm}}</label
+                  >
+                </div>
+              </li>
+              {{~}}
+            </ul>
+          </div>
+        </div>
+
+        <div data-define="productOptList" class="option-select-list">
+          {{~ it.resData.aData.optlist :p:i }}
+          <div
+            class="cell-selected"
+            data-name="{{=p.name}}"
+            data-opt-size="{{=p.optsize}}"
+            data-opt-cd="{{=p.optcd}}"
+            data-inv-qty="{{= p.invQty}}"
+            data-price="{{= p.price}}"
+            data-optpri="{{=p.optPri}}"
+          >
+            <span class="text-muted">{{= p.name}}</span>
+            <div>
+              <div class="">
+                <button class="tmpl-event-minus" data-qty="minus">감소</button>
+                <div class="">
+                  <div class="">
+                    <input type="number" name="prd-qty" class="" value="1" />
+                  </div>
+                </div>
+                <button class="tmpl-event-plus" data-qty="plus">증가</button>
+              </div>
+              <div class="">
+                <span>{{= p.price}}원</span>
+                <button class="tmpl-event-delete">삭제</button>
+              </div>
+            </div>
+          </div>
+          {{~}}
+        </div>
+
+        <div class="clearfix">
+          <strong class="text-huge">판매가</strong>
+          <strong
+            id="total-price-text"
+            class="text-huge text-primary pull-right"
+            >0원</strong
+          >
+          <input type="hidden" id="total-price" value="0" />
+        </div>
+      </div>
+      <div class="sticky-layer display-table bg-clean">
+        <div class="col-xs-2 display-table--cell c1">
+          <button
+            class="button tmpl-event-wish button-large button-default button-block clear-padding"
+            data-call="modal"
+            data-route="#modal-floating"
+            onclick="javascript:modal.call(this); return false;"
+          >
+            <i class="icon-heart-thin-empty text-giant"></i>
+          </button>
+        </div>
+        <div class="col-xs-5 display-table--cell clear-padding c2">
+          <span
+            class="button tmpl-event-basket button-dimmed button-large button-block"
+            data-call="modal"
+            data-route="#modal-floating-cart"
+            onclick="javascript:modal.call(this); return false;"
+          >
+            <span>장바구니</span>
+          </span>
+        </div>
+        <div class="col-xs-5 display-table--cell c3">
+          <a
+            href="#"
+            class="button tmpl-event-order button-primary button-large button-block"
+          >
+            <span>바로구매</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="" id="productOptCtr2" data-template="productOptCtr">
+      <div class="">
+        <div data-define="productOpt" class="product-opt">
+          <div class="selectbox-layer">
+            <div class="selectbox-layer-display tmpl-event-selectopt">
+              <span class="text-muted">옵션을 선택하세요.</span>
+            </div>
+            <ul class="selectbox-layer-option">
+              {{~ it.resData.aData.list :p2:i2 }}
+              <li class="">
+                <div class="checkbox">
+                  <input
+                    type="checkbox"
+                    id="{{=it.resData.eData.unique}}-product-option-{{=it.resData.eData.step}}-{{=i2}}"
+                    name="product-option"
+                    value="{{=p2.OptionNm}}"
+                    data-value="{{=p2.PrdSize}}(-){{=p2.PrstCd}}(-){{=p2.ImsiInvQty}}(-){{=p2.OptNm}}(-)10000(-){{=p2.OptPri}}"
+                    class="product-option tmpl-event-selectoptitem"
+                  />
+                  <label
+                    for="{{=it.resData.eData.unique}}-product-option-{{=it.resData.eData.step}}-{{=i2}}"
+                    class="checkbox-display"
+                  ></label>
+                  <label
+                    for="{{=it.resData.eData.unique}}-product-option-{{=it.resData.eData.step}}-{{=i2}}"
+                    class="checkbox-label"
+                    >{{=p2.OptionNm}}</label
+                  >
+                </div>
+              </li>
+              {{~}}
+            </ul>
+          </div>
+        </div>
+
+        <div data-define="productOptList" class="option-select-list">
+          {{~ it.resData.aData.optlist :p:i }}
+          <div
+            class="cell-selected"
+            data-name="{{=p.name}}"
+            data-opt-size="{{=p.optsize}}"
+            data-opt-cd="{{=p.optcd}}"
+            data-inv-qty="{{= p.invQty}}"
+            data-price="{{= p.price}}"
+            data-optpri="{{=p.optPri}}"
+          >
+            <span class="text-muted">{{= p.name}}</span>
+            <div>
+              <div class="">
+                <button class="tmpl-event-minus" data-qty="minus">감소</button>
+                <div class="">
+                  <div class="">
+                    <input type="number" name="prd-qty" class="" value="1" />
+                  </div>
+                </div>
+                <button class="tmpl-event-plus" data-qty="plus">증가</button>
+              </div>
+              <div class="">
+                <span>{{= p.price}}원</span>
+                <button class="tmpl-event-delete">삭제</button>
+              </div>
+            </div>
+          </div>
+          {{~}}
+        </div>
+
+        <div class="clearfix">
+          <strong class="text-huge">판매가</strong>
+          <strong
+            id="total-price-text"
+            class="text-huge text-primary pull-right"
+            >0원</strong
+          >
+          <input type="hidden" id="total-price" value="0" />
+        </div>
+      </div>
+      <div class="sticky-layer display-table bg-clean">
+        <div class="col-xs-2 display-table--cell c1">
+          <button
+            class="button tmpl-event-wish button-large button-default button-block clear-padding"
+            data-call="modal"
+            data-route="#modal-floating"
+            onclick="javascript:modal.call(this); return false;"
+          >
+            <i class="icon-heart-thin-empty text-giant"></i>
+          </button>
+        </div>
+        <div class="col-xs-5 display-table--cell clear-padding c2">
+          <span
+            class="button tmpl-event-basket button-dimmed button-large button-block"
+            data-call="modal"
+            data-route="#modal-floating-cart"
+            onclick="javascript:modal.call(this); return false;"
+          >
+            <span>장바구니</span>
+          </span>
+        </div>
+        <div class="col-xs-5 display-table--cell c3">
+          <a
+            href="#"
+            class="button tmpl-event-order button-primary button-large button-block"
+          >
+            <span>바로구매</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
+
+      var ctrClass = function (el) {
+        this.$el = $(el);
+        this.$el.data("ctr", this);
+        this.unque;
+
+        this.totStep = 0;
+        this.presentStep = 0;
+        this.progressStep = [];
+
+        this.orignStepData;
+        this.preventStepData = {};
+
+        this.ajaxDef = {
+          file: "http://m.halfclub.com/WebService/Shop/ShopService.asmx/GetOptionforDetail_V2",
+          type: "POST",
+          forUpload: true,
+          contentType: "application/json",
+          async: false,
+          data: JSON.stringify({
+            PrstCD: "Winter-Slacks_01",
+            ColorCD: "zz9",
+            PCode: "",
+            Depth: 0,
+            FirstOption: "",
+            SecondOption: "",
+            ThirdOption: "",
+            MinImsiQty: 0,
+            SalOut: "a",
+            SelectedOptCD: "",
+          }),
+          callback: function (rData) {},
+        };
+
+        this.rDataDef = {
+          resCode: 1,
+          resData: {
+            aData: {},
+            eData: {},
+          },
+        };
+
+        this.init();
+      };
+      // 기본틀 만듬 (dot.js 템플릿을 이용해서)
+      ctrClass.prototype.doTemplete = function () {
+        this.ajaxDef["callback"] = function (rData) {
+          var data = {
+            resData: {
+              aData: {
+                //					list : [],
+                optlist: [],
+              },
+              eData: {
+                unique: 0, // 객체생성 유니키 키(체크박스의 고유 아이디 생성을 위해서
+                totStep: rData.resData.OptionsList_V2[0].StepOption, // 총 스탭수(1부터 시작)
+                step: 0, // 선택옵션 진행 단계
+              },
+            },
+          };
+          data.resData.aData.list = rData.resData.OptionsList_V2;
+
+          if (!this.constructor.unique) {
+            this.constructor.unique = 1;
+          } else {
+            this.constructor.unique++;
+          }
+          this.unique = this.constructor.unique;
+          data.resData.eData.unique = this.unique;
+
+          this.totStep = rData.resData.OptionsList_V2[0].StepOption;
+          this.orignStepData = data.resData.aData;
+
+          this.$el.tmpl(data);
+        };
+
+        boriUI.FN.ajax.bind(this)(this.ajaxDef);
+      };
+      ctrClass.prototype.init = function () {
+        this.doTemplete();
+        this._buildSelect();
+        this.priceCalc();
+      };
+      // 셀렉트리스트 초기생성
+      ctrClass.prototype._buildSelect = function () {
+        var cnt = 0;
+
+        for (cnt; cnt < this.totStep - 1; cnt++) {
+          this.$el
+            .find(".product-opt")
+            .append(
+              boriUI.TMPL.productOptCtr.productOpt({ resData: { aData: {} } })
+            );
+        }
+      };
+      // 스탭증가
+      ctrClass.prototype.plusStep = function () {
+        var tmp = this.presentStep + 1;
+
+        if (tmp <= this.totStep - 1) {
+          this.presentStep = tmp;
+        }
+      };
+      // 스탭감소
+      ctrClass.prototype.minusStep = function () {
+        var tmp = this.presentStep - 1;
+
+        if (tmp > 0) {
+          this.presentStep = tmp;
+        }
+      };
+      // 선택항목리스트 삭제
+      ctrClass.prototype.delOpt = function ($node) {
+        $node.remove();
+        this.$el
+          .find(
+            ".selectbox-layer.active input[data-opt-cd='" +
+              $node.data("opt-cd") +
+              "']"
+          )
+          .prop("checked", false);
+      };
+
+      // 총금액계산
+      ctrClass.prototype.priceCalc = function (node) {
+        var totalPrice = 0,
+          $optionSelectList = this.$el.find(".option-select-list"),
+          $prdQtyList = $optionSelectList.find(".cell-selected");
+
+        $prdQtyList.each(function () {
+          var $this = $(this),
+            data = $this.data(),
+            prdQty = parseInt($this.find("input[name='prd-qty']").val());
+
+          totalPrice += data.price * prdQty;
+        });
+
+        this.$el.find("#total-price").val(totalPrice);
+        this.$el
+          .find("#total-price-text")
+          .html(numberWithCommas(totalPrice) + "원");
+      };
+
+      // 선택항목리스트에 등록
+      ctrClass.prototype._editOpt = function (node) {
+        var optionsplit = $(node).data("value").split("(-)"), // option value 는 (-) 구분자로 정보가 나누어져있으므로 // 종택일관련 수정 (김인환 : 20130415)
+          //classid = node.id,
+          classid = optionsplit[0],
+          duplicate = [];
+
+        if (node.checked) {
+          // 상품 정보
+          this.rDataDef.resCode = 1;
+          $.extend(this.rDataDef.resData.aData, {
+            optlist: [
+              {
+                name: optionsplit[3],
+                price: parseInt(optionsplit[4]),
+                optsize: optionsplit[0],
+                optcd: optionsplit[1],
+                invQty: optionsplit[2],
+                classid: classid,
+                optPri: optionsplit[5],
+              },
+            ],
+          });
+          //중복선택 필터
+          //		duplicate = $.map(this.$el.find(".cell-selected"),function(v) { return $(v).data("class-id").toString(); });
+          //		if (duplicate.length && duplicate.indexOf(optionsplit[0]) >= 0 ) {
+          //			this.rDataDef.resCode = 0;
+          //		}
+          this.$el.find(".option-select-list").append(this.rDataDef);
+        } else {
+          this.$el
+            .find(".cell-selected[data-opt-cd='" + classid + "']")
+            .remove();
+        }
+
+        this.priceCalc();
+      };
+      // 셀렉트박스 선택시 실행
+      // 노드의 값[O] : 클릭되어진 node 의 presentStep 설정 후 이용
+      // 노드의 값[X] : 기본 presentStep 이용
+      ctrClass.prototype.checkedSelect = function (node) {
+        var _step = node ? $(node.parentElement).index() : this.presentStep;
+
+        this.presentStep = _step;
+
+        if (this.$el.find(".selectbox-layer").eq(_step).hasClass("active")) {
+          this.$el.find(".selectbox-layer").removeClass("active");
+        } else {
+          this.$el
+            .find(".selectbox-layer")
+            .removeClass("active")
+            .eq(_step)
+            .addClass("active");
+        }
+      };
+      // 진행배열설정
+      ctrClass.prototype.setProgressStep = function (node) {
+        this.progressStep[this.presentStep] = node.id;
+        this.progressStep.length = this.presentStep + 1;
+      };
+      // 셀렉트된값 설정
+      ctrClass.prototype.setValueSelectOpt = function (node) {
+        var _val = node.checked
+          ? node.parentElement.innerText
+          : "옵션을 선택하세요.";
+
+        this.$el
+          .find(".selectbox-layer")
+          .eq(this.presentStep)
+          .find(".text-muted")
+          .text(_val);
+
+        return node.checked;
+      };
+
+      ctrClass.prototype.resetCheckboxInSelectOpt = function (node) {
+        this.$el
+          .find(".selectbox-layer")
+          .eq(this.presentStep)
+          .find("input:checked")
+          .each(
+            function (i, v) {
+              if (node !== v) {
+                v.checked = false;
+              } else {
+                this.setProgressStep(node);
+              }
+            }.bind(this)
+          );
+      };
+      // 옵션선택시
+      ctrClass.prototype.checkedSelectOpt = function (node) {
+        if (this.totStep == 1 || this.presentStep == this.totStep - 1) {
+          // 마지막 스텝 옵션추가/삭제 작업
+          this._editOpt(node);
+        } else {
+          this.resetCheckboxInSelectOpt(node);
+
+          if (this.setValueSelectOpt(node)) {
+            this.checkedSelect();
+            this.plusStep();
+
+            $.extend(this.ajaxDef, {
+              data: JSON.stringify({
+                PrstCD: "Winter-Slacks_01",
+                ColorCD: "zz9",
+                PCode: "",
+                Depth: this.presentStep,
+                FirstOption: this.progressStep[0]
+                  ? this.$el.find("#" + this.progressStep[0]).val()
+                  : "",
+                SecondOption: this.progressStep[1]
+                  ? this.$el.find("#" + this.progressStep[1]).val()
+                  : "",
+                ThirdOption: this.progressStep[2]
+                  ? this.$el.find("#" + this.progressStep[2]).val()
+                  : "",
+                MinImsiQty: 0,
+                SalOut: "a",
+                SelectedOptCD: "",
+              }),
+              callback: function (_rData) {
+                var rData = $.extend({}, this.rDataDef);
+
+                rData.resData.aData.list = _rData.resData.OptionsList_V2;
+                rData.resData.eData.step = this.presentStep;
+                rData.resData.eData.unique = this.unique;
+
+                this.$el
+                  .find(".selectbox-layer")
+                  .eq(this.presentStep)
+                  .after(boriUI.TMPL.productOptCtr.productOpt(rData));
+                this.$el.find(".selectbox-layer").eq(this.presentStep).remove();
+
+                this.checkedSelect();
+                this.updateSelect();
+                this.updateLastOptionList();
+              },
+            });
+
+            //this.ajaxDef.file = "http://m.halfclub.com/WebService/shop/GetOptionsStepList";
+            boriUI.FN.ajax.bind(this)(this.ajaxDef);
+          } else {
+            this.updateSelect();
+          }
+        }
+      };
+      // 마지막 옵션 리스트 선택된 항목을 비교해서 체크 해줌
+      ctrClass.prototype.updateLastOptionList = function () {
+        if (this.presentStep == this.totStep - 1) {
+          var val = $.map(
+            this.$el.find(".cell-selected"),
+            function (v) {
+              this.$el
+                .find(
+                  ".selectbox-layer.active input[data-opt-cd='" +
+                    $(v).data("opt-cd").toString() +
+                    "']"
+                )
+                .prop("checked", true);
+            }.bind(this)
+          );
+        }
+      };
+      // 셀렉트리스트 재정렬
+      ctrClass.prototype.updateSelect = function () {
+        var cnt = 0;
+
+        for (cnt; cnt < this.totStep; cnt++) {
+          if (cnt > this.presentStep) {
+            this.$el
+              .find(".selectbox-layer")
+              .eq(cnt)
+              .find(".text-muted")
+              .text("옵션을 선택하세요.")
+              .end()
+              .find(".selectbox-layer-option li")
+              .remove();
+          }
+        }
+      };
+      // 셀렉트리스트 초기화
+      ctrClass.prototype.initSelect = function () {
+        var cnt = 0;
+
+        for (cnt; cnt < this.totStep; cnt++) {
+          this.$el
+            .find(".selectbox-layer")
+            .eq(cnt)
+            .removeClass("active")
+            .find("input")
+            .prop("checked", false)
+            .end()
+            .find(".text-muted")
+            .text("옵션을 선택하세요.")
+            .end()
+            .find(".selectbox-layer-option:not(:eq(0)) li")
+            .remove();
+        }
+
+        this.presentStep = 0;
+      };
+
+      $.extend(boriUI.FN, {
+        productOptCtr: function (rData) {
+          /*
+		this : template 영역
+		*/
+          var localVar = {},
+            el = this,
+            ctrO = $(el).data("ctr"); // 스텝옵션 컨드롤러
+
+          $(el)._eventBind(
+            {
+              oc: function (e) {
+                $(e.currentTarget)
+                  .closest(".product-view--sticky")
+                  .toggleClass("active");
+              },
+              selectopt: function (e) {
+                ctrO.checkedSelect(e.currentTarget);
+              },
+              selectoptitem: function (e) {
+                ctrO.checkedSelectOpt(e.currentTarget);
+              },
+              wish: function (e) {
+                WishIns(IsOptions);
+              },
+              basket: function (e) {
+                CheckForm("cart", "halfclub", "");
+              },
+              order: function (e) {
+                CheckForm("direct", "halfclub", "");
+              },
+              plus: function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var $this = $(e.currentTarget);
+                var $container = $this.closest(".cell-selected");
+                var invtLimit = parseInt($container.data("inv-qty"), 10); // 재고 카운트
+                var $prdQty = $container.find("[name='prd-qty']");
+                var prdQty = parseInt($prdQty.val(), 10);
+
+                if (prdQty + 1 > invtLimit) {
+                  alert("더이상 주문을 하실수 없습니다.");
+                  return;
+                }
+
+                if (prdQty + 1 > 30) {
+                  alert("30개 이상 주문하실 수 없습니다.");
+                  return;
+                }
+
+                if (prdQty > 0) {
+                  prdQty += 1;
+                  $prdQty.val(prdQty);
+                  ctrO.priceCalc();
+                }
+              },
+              minus: function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var $this = $(this);
+                var $container = $this.closest(".cell-selected");
+                var $prdQty = $container.find("[name='prd-qty']");
+                var prdQty = parseInt($prdQty.val(), 10);
+
+                if (prdQty - 1 <= 0) {
+                  //alert('더이상 주문을 하실수 없습니다.');
+                  return;
+                }
+
+                if (prdQty > 0) {
+                  prdQty -= 1;
+                  $prdQty.val(prdQty);
+                  ctrO.priceCalc();
+                }
+              },
+              delete: function (e) {
+                ctrO.delOpt($(e.currentTarget).closest(".cell-selected")); // 선택항목(.cell-selected)
+                ctrO.priceCalc();
+              },
+            },
+            "click",
+            "tmpl-event-"
+          );
+        },
+      });
+
+      new ctrClass(document.getElementById("productOptCtr"));
+      new ctrClass(document.getElementById("productOptCtr1"));
+      new ctrClass(document.getElementById("productOptCtr2"));
+    </script>
+  </body>
+</html>

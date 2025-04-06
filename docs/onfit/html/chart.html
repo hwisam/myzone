@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>OnFit</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+	<link rel="stylesheet" type="" href="../css/reset.css">
+	<link rel="stylesheet" type="" href="../css/style.css">
+	<style>
+		.chart-container {position: relative;padding:0 0 0 10px;border-top:1px solid rgb(194,202,215)}
+		.chart-container:first-child {border-top:0}
+		.chart-container canvas {-moz-user-select: none;-webkit-user-select: none;-ms-user-select: none;}
+		.chartjs-tooltip {position: absolute;background: rgba(24, 140, 255, 1);color: white;border-radius: 3px;-webkit-transition: all .1s ease;transition: all .1s ease;pointer-events: none;-webkit-transform: translate(-50%, 0);	transform: translate(-50%, 0);width:70px;height:40px;opacity: 1;}
+		.chartjs-tooltip .content > p {font-size:18px;text-align:center;line-height:28px;}
+		.chartjs-tooltip .content > div {font-size:25px;line-height:50px;text-align:center}
+		.chartjs-main-title {position: relative;height: 3.5rem;font-size: 3.5rem;}
+		.chartjs-main-title .tit{position:absolute;top:15px;left:0;}
+		.chartjs-main-title .unit{position:absolute;top:15px;right:20px;color:rgba(24, 140, 255, 1)}
+
+
+
+
+		/* 스크롤시 */
+		.scroll-container {position: relative;}
+		.scroll-container:before {content: '';position: absolute;top: 0;left: 0;bottom: 0;z-index: 10;width: 40px;background: -webkit-gradient(linear,right top,left top,from(rgba(255,255,255,0)),color-stop(83.34%,#fff));background: -webkit-linear-gradient(right,rgba(255,255,255,0),#fff 83.34%);background: linear-gradient(to left,rgba(255,255,255,0),#fff 83.34%);}
+		.scroll-container:after {content: '';position: absolute;top: 0;right: 0;bottom: 0;z-index: 10;width: 40px;background: -webkit-gradient(linear,left top,right top,from(rgba(255,255,255,0)),color-stop(65%,#fff));background: -webkit-linear-gradient(left,rgba(255,255,255,0),#fff 65%);background: linear-gradient(to right,rgba(255,255,255,0),#fff 65%);}
+		.scroll-wrap {width:100%;position:relative;overflow-x:scroll;overflow-y: hidden;}
+		.scroll-wrap .scroll-inner {white-space: nowrap;}
+		.scroll-wrap .scroll-inner .chart-container {display:inline-block;border:0;}
+		/* 스크롤시 */
+	</style>
+</head>
+<body>
+	<div class="wrap">
+		<header id="headerWrap" class="fixed">
+			<div class="header">
+				<h1 class="headerTitle">Layer-popup</h1>
+				<button type="button" class="btnR btnClose">닫기</button>
+			</div>
+		</header>
+		<div class="contentWrap">
+	
+			<div class="scroll-container">
+				<div class="scroll-wrap">
+					<div class="scroll-inner">
+					<!--  -->
+					</div>
+				</div>
+			</div>
+			<div class="chart-container" >
+				<canvas id="canvas" ></canvas>
+			</div>
+
+			<div class="chart-container" >
+				<canvas id="canvas2" ></canvas>
+			</div>
+
+			<div class="chart-container" >
+				<canvas id="canvas3" ></canvas>
+			</div>
+
+			<div class="chart-container" >
+				<canvas id="canvas4" ></canvas>
+			</div>
+
+			<div class="chart-container" >
+				<canvas id="canvas5" ></canvas>
+			</div>
+
+			<div class="chart-container" >
+				<canvas id="canvas6" ></canvas>
+			</div>
+
+		</div>
+	</div>
+	<script type="text/javascript" src="../js/jquery-3.3.1.min.js"></script>
+	<!--script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script-->
+	<script type="text/javascript" src="../js/chart.min.js"></script>
+	<script>
+
+		var customTooltips = function(tooltip) {
+			var
+				$el = $(this._chart.canvas).parent();
+
+			// Tooltip Element
+			var tooltipEl = $el.find('.chartjs-tooltip')[0];
+
+
+			if (!tooltipEl) {
+				tooltipEl = document.createElement('div');
+				tooltipEl.className = 'chartjs-tooltip';
+				$el.append(tooltipEl);
+			}
+
+			// Hide if no tooltip
+			if (tooltip.opacity === 0) {
+				tooltipEl.style.opacity = 0;
+				return;
+			}
+
+			// Set caret Position
+			tooltipEl.classList.remove('above', 'below', 'no-transform');
+			if (tooltip.yAlign) {
+				tooltipEl.classList.add(tooltip.yAlign);
+			} else {
+				tooltipEl.classList.add('no-transform');
+			}
+
+			function getBody(bodyItem) {
+				return bodyItem.lines;
+			}
+
+			// Set Text
+			if (tooltip.body) {
+				var titleLines = tooltip.title || [];
+				var bodyLines = tooltip.body.map(getBody);
+				tooltipEl.innerHTML = '';
+				tooltipEl.innerHTML = "<div class='content'><p>"+bodyLines[0][0].replace(/[^0-9]/g,"")+"</p></div>";
+			}
+
+			var positionY = this._chart.canvas.offsetTop-60;
+			var positionX = this._chart.canvas.offsetLeft;
+
+			// Display, position, and set styles for font
+			tooltipEl.style.opacity = 1;
+			tooltipEl.style.left = positionX + tooltip.caretX + 'px';
+			tooltipEl.style.top = positionY + tooltip.caretY + 'px';
+			tooltipEl.style.fontFamily = tooltip._bodyFontFamily;
+			tooltipEl.style.fontSize = tooltip.bodyFontSize + 'px';
+			tooltipEl.style.fontStyle = tooltip._bodyFontStyle;
+			tooltipEl.style.padding = tooltip.yPadding + 'px ' + tooltip.xPadding + 'px';
+		};
+
+
+        Chart.pluginService.register({
+			afterInit : function(chart) {
+				if (chart.config.options.chartMainTitle ) {
+					var
+						$el = $(chart.chart.canvas).parent(),
+						$mainTitle;
+	
+					if (!$el.find(".chartjs-main-title").length) {
+						$mainTitle = $("<div class='chartjs-main-title'><span class='tit'>"+chart.config.options.chartMainTitle.title+"</span><span class='unit'>"+chart.config.options.chartMainTitle.unit+"</span></div>");
+						$el.prepend($mainTitle);
+					}
+				}
+				chart.scales['y-axis-0'].ticks = chart.scales['y-axis-0'].ticks.map(function(value) {
+					return value+""+chart.options.chartMainTitle.unit;
+				});
+				//chart.options.scales['yAxes'][0].ticks.padding = chart.options.scales['yAxes'][0].ticks.padding+5;
+			},
+			afterUpdate: function(chart) {
+				var dataset = chart.config.data.datasets[0];
+				for(var k in dataset._meta){ var __meta = k; }
+				var offset = (dataset._meta[__meta].data[1]._model.x-dataset._meta[__meta].data[0]._model.x)/2;
+
+				for (var i = 0; i < dataset._meta[__meta].data.length; i++) {
+					var model = dataset._meta[__meta].data[i]._model;
+					model.x += offset;
+					model.controlPointNextX += offset;
+					model.controlPointPreviousX += offset;
+				}
+			},
+            beforeDraw: function (chart, easing) {
+                if (chart.config.options.chartArea && chart.config.options.chartArea.backgroundColor) {
+                    var ctx = chart.chart.ctx;
+                    var chartArea = chart.chartArea;
+
+                    ctx.save();
+                    ctx.fillStyle = chart.config.options.chartArea.backgroundColor;
+                    ctx.fillRect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
+                    ctx.restore();
+                }
+            }
+        });
+		//Chart.defaults.global.defaultFontSize = 18;
+
+		var config = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [ {
+					label: 'Dataset with point data',
+					backgroundColor: "rgb(24, 140, 255)",
+					borderColor: "rgb(24, 140, 255)",
+					pointBorderColor:"rgba(235, 242, 248, 1)",
+					borderWidth:2.5,
+					pointBorderWidth:5,
+					pointRadius:7,
+					pointHoverBorderWidth:7,
+					pointHoverRadius:10,
+					fill: false,
+					"lineTension": 0.1,
+					data: [],
+				}]
+			},
+			options: {
+				title: {
+					display:true,
+					text: '',
+					size:20
+				},
+				layout: {
+					padding: {
+						right: 30
+					}
+				},
+				legend: {
+					display:false,
+					labels: {
+						fontColor: 'black',
+						fontSize: 16
+					}
+				},
+				tooltips: {
+					enabled: false,
+					//mode: 'index',
+					//position: 'nearest',
+					custom: customTooltips
+				},
+				scales: {
+					xAxes: [{
+						ticks: {
+							display:true,
+							source: 'data',
+							fontSize:13,
+							fontColor:'rgb(137,145,159)'
+						},
+						gridLines:{
+							display:true,
+							color: "rgb(194,202,215)",
+							lineWidth:1,
+							zeroLineColor :"rgb(194,202,215)",
+							zeroLineWidth : 1,
+							drawBorder:true,
+							drawOnChartArea:true,
+							drawTicks:true,
+							offsetGridLines:true, // gridline 위에 점 위치
+						},
+						scaleLabel: {
+							display: true,
+							labelString:'',
+						},
+					}],
+					yAxes: [{
+						position: 'right',
+						scaleLabel: {
+							display: false,
+							position:"top",
+							labelString: 'Kg'
+						},
+						gridLines: {
+							color: "rgb(206,215,225)",
+							borderDash: [5, 3],
+							offsetGridLines:true,
+							drawTicks:false, //
+							drawBorder: false,  // yAxes left line
+						},
+						ticks: {
+							fontSize:13,
+							fontColor: 'rgb(137,145,159)',
+							lineWidth:10,
+							//min: 60,
+							//max: 100,
+							//stepSize : 10,
+							padding:5,
+							/*
+							callback: function(value, index, values) {
+								//return value+ " kg";
+							}
+							*/
+						}
+					}]
+				},
+				responsive: false,
+				maintainAspectRatio: true,
+				chartArea: {
+					backgroundColor: 'rgba(235, 242, 248, 1)'
+				},
+				chartMainTitle: {
+					title: '몸무게',
+					unit: 'Kg',
+				},
+			}
+		};
+
+
+
+		(function() {
+			var _opt = {
+				data: {
+					labels: [ // Date Objects
+						'18.7.1',
+						'18.7.2',
+						'18.7.3',
+						'18.7.4',
+						'18.7.5',
+					],
+					datasets: [{
+						data: [90,85,80,79,75],
+					}]
+				},
+				options: {
+					chartMainTitle: {
+						title: '몸무게',
+						unit: 'kg',
+					},
+				}
+			};
+			var __opt = {};
+			var _config = $.extend(true,{},config);
+			__opt = $.extend(true,_config,_opt);
+			var ctx = document.getElementById('canvas').getContext('2d')
+			ctx.canvas.width = document.body.clientWidth;
+			var k = new Chart(ctx, __opt);
+		})();
+
+
+		(function() {
+			var _opt = {
+				data: {
+					labels: [ // Date Objects
+						'18.8.1',
+						'18.8.2',
+						'18.8.3',
+						'18.8.4',
+						'18.8.5',
+						'18.8.6'
+					],
+					datasets: [{
+						data: [13,14,15,19,25,40]
+					}]
+				},
+				options: {
+					chartMainTitle: {
+						title: '체지방',
+						unit: 'mg',
+					},
+				}
+			};
+			var __opt = {};
+			var _config = $.extend(true,{},config);
+			__opt = $.extend(true,_config,_opt);
+			var ctx = document.getElementById('canvas2').getContext('2d')
+			ctx.canvas.width = document.body.clientWidth;
+			var k = new Chart(ctx, __opt);
+		})();
+
+
+		(function() {
+			var _opt = {
+				data: {
+					labels: [ // Date Objects
+						'10.7.1',
+						'10.7.2',
+						'10.7.3',
+						'10.7.4',
+						'10.7.5',
+						'10.7.6',
+						'10.7.7',
+						'10.7.8',
+						'10.7.9',
+						'10.7.10',
+					],
+					datasets: [{
+						data: [900,850,800,790,750,740,730,750,740,723],
+					}]
+				},
+				options: {
+					chartMainTitle: {
+						title: '활동지방',
+						unit: 'qwe',
+					},
+				}
+			};
+			var __opt = {};
+			var _config = $.extend(true,{},config);
+			__opt = $.extend(true,_config,_opt);
+			var ctx = document.getElementById('canvas3').getContext('2d')
+			ctx.canvas.width = document.body.clientWidth;
+			var k = new Chart(ctx, __opt);
+		})();
+
+		(function() {
+			var _opt = {
+				data: {
+					labels: [ // Date Objects
+						'18.7.1',
+						'18.7.2',
+						'18.7.3',
+						'18.7.4',
+						'18.7.5',
+					],
+					datasets: [{
+						data: [90,85,80,79,75],
+					}]
+				},
+				options: {
+					chartMainTitle: {
+						title: '몸무게',
+						unit: 'kg',
+					},
+				}
+			};
+			var __opt = {};
+			var _config = $.extend(true,{},config);
+			__opt = $.extend(true,_config,_opt);
+			var ctx = document.getElementById('canvas4').getContext('2d')
+			ctx.canvas.width = document.body.clientWidth;
+			var k = new Chart(ctx, __opt);
+		})();
+
+		(function() {
+			var _opt = {
+				data: {
+					labels: [ // Date Objects
+						'10.7.1',
+						'10.7.2',
+						'10.7.3',
+						'10.7.4',
+						'10.7.5',
+						'10.7.6',
+						'10.7.7',
+						'10.7.8',
+						'10.7.9',
+						'10.7.10',
+					],
+					datasets: [{
+						data: [900,850,800,790,750,740,730,750,740,723],
+					}]
+				},
+				options: {
+					chartMainTitle: {
+						title: '활동지방',
+						unit: 'qwe',
+					},
+				}
+			};
+			var __opt = {};
+			var _config = $.extend(true,{},config);
+			__opt = $.extend(true,_config,_opt);
+			var ctx = document.getElementById('canvas5').getContext('2d')
+			ctx.canvas.width = document.body.clientWidth;
+			var k = new Chart(ctx, __opt);
+		})();
+
+
+		(function() {
+			var _opt = {
+				data: {
+					labels: [ // Date Objects
+						'18.8.1',
+						'18.8.2',
+						'18.8.3',
+						'18.8.4',
+						'18.8.5',
+						'18.8.6'
+					],
+					datasets: [{
+						data: [13,14,15,19,25,40]
+					}]
+				},
+				options: {
+					chartMainTitle: {
+						title: '체지방',
+						unit: 'mg',
+					},
+				}
+			};
+			var __opt = {};
+			var _config = $.extend(true,{},config);
+			__opt = $.extend(true,_config,_opt);
+			var ctx = document.getElementById('canvas6').getContext('2d')
+			ctx.canvas.width = document.body.clientWidth;
+			var k = new Chart(ctx, __opt);
+		})();
+
+	</script>
+ </body>
+</html>
